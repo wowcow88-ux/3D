@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png?v=020" />
 <link rel="manifest" href="./manifest.webmanifest?v=020" />
 <meta name="description" content="3D Studio — 免費、平板友善、優雅簡約的 3D 建模與編輯工作室。" />
-<title>3D Studio · 多機型 3D 建模工作室</title>
+<title>3D Studio · 模型進階編輯工作室</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <style>
 :root { --ink:#1d2433;--muted:#8a90a0;--line:#e8ebf1;--surface:#fff;--canvas:#f4f6fa;--blue:#2367ed;--blue-dark:#0f4fd7;--soft-blue:#eaf1ff;--radius:22px; --shadow:0 10px 35px rgba(45,54,75,.055);--font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; }
@@ -33,7 +33,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 @media(max-width:490px){.top-actions .pill span{display:none}.top-actions .pill{width:40px;height:40px;min-height:40px;padding:0}.top-actions{gap:6px}.brand-sub{display:none}.brand-name{font-size:14px}.topbar{gap:6px}.stage-head h1{font-size:18px}.stage-head p{max-width:175px}.tool-dock .tool{height:34px;width:34px}.tool-dock{padding:5px;bottom:19px}.tool-divider{margin:0 1px}.stage-badges{bottom:80px}.view-actions button{font-size:10px;padding:8px}.toast{bottom:85px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* v0.2.0: print profile sheet, compact premium controls */
+/* v0.3.0: print profile sheet, compact premium controls */
 :root{--ink:#202124;--muted:#858995;--blue:#30343b;--blue-dark:#171a20;--soft-blue:#eef0f3}
 .pill.primary{box-shadow:0 7px 20px #171a2022}
 .brand-logo{background:#f5f5f6}
@@ -58,8 +58,28 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .report-good{color:#287c56}.report-bad{color:#b35f43}
 @media(max-width:850px){.stage-head{max-width:62%;gap:8px;flex-wrap:wrap}.printer-shortcut{max-width:185px}.stage-head p{display:none}}
 @media(max-width:490px){.printer-settings-grid{gap:7px}.printer-field input,.printer-field select{font-size:12px;padding:10px 7px}.stage-head h1{font-size:18px}.stage-head{top:12px}.view-actions{top:14px}.printer-shortcut{font-size:10px}.printer-dialog{padding:18px}.printer-settings-grid.two{gap:8px}}
+
+/* v0.3.0: Advanced geometry tools remain in a quiet, compact drawer/dialog */
+.advanced-entry{margin:2px 0 8px;width:100%;justify-content:space-between}
+.advanced-entry .left{display:inline-flex;align-items:center;gap:9px}
+.advanced-muted{font-size:11px;color:#909baa;line-height:1.7;margin:7px 0 0}
+.advanced-modal{max-width:620px;max-height:min(90dvh,860px);overflow-y:auto}
+.advanced-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:15px 0;border-radius:17px;background:#f3f4f7;padding:5px}
+.advanced-tab{border:0;border-radius:13px;background:transparent;padding:11px 4px;font-size:12px;color:#818a98;font-weight:750;min-height:42px;white-space:nowrap}
+.advanced-tab.active{background:white;color:#29313d;box-shadow:0 2px 8px #1f293710}
+.advanced-pane{display:none}
+.advanced-pane.active{display:block}
+.advanced-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.advanced-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.advanced-control label{display:block;font-size:11px;color:#7d8796;font-weight:700;margin-bottom:8px}
+.advanced-control select,.advanced-control input{width:100%;min-width:0;padding:11px 10px;font-size:13px;color:#3c4656;background:#f8f9fc;border:1px solid #e6e9ef;border-radius:13px;outline:none}
+.advanced-help{font-size:11px;line-height:1.8;color:#8a94a4;margin:8px 0 15px}
+.advanced-report{font-size:12px;line-height:1.8;border:1px solid #edf0f4;background:#f8f9fb;padding:13px;border-radius:15px;color:#5b6676;white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
+.advanced-action{width:100%;justify-content:center;margin-top:10px}
+.advanced-footer-note{padding-top:12px;border-top:1px solid #edf0f4;color:#9a9faa;font-size:10px;line-height:1.7;margin-top:18px}
+@media(max-width:490px){.advanced-modal{padding:18px!important;max-height:88dvh}.advanced-tabs{gap:3px}.advanced-tab{font-size:11px}.advanced-row{gap:8px}}
 </style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/"}}</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/","three-bvh-csg":"https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.17/build/index.module.js","three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.8.3/build/index.module.js"}}</script>
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -112,7 +132,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div id="moreMenu" class="dropdown hidden" role="menu">
     <button data-action="export-glb"><svg class="i"><use href="#ic-save"/></svg>備份完整專案 GLB</button>
     <button data-action="import"><svg class="i"><use href="#ic-upload"/></svg>匯入 STL / OBJ / GLB / 3MF / SVG</button>
-    <button data-action="printer"><svg class="i"><use href="#ic-sliders"/></svg>選擇印表機與列印設定</button><button data-action="settings-json"><svg class="i"><use href="#ic-download"/></svg>下載切片設定備忘 JSON</button><button data-action="screenshot"><svg class="i"><use href="#ic-camera"/></svg>下載預覽圖片</button>
+    <button data-action="printer"><svg class="i"><use href="#ic-sliders"/></svg>選擇印表機與列印設定</button><button data-action="advanced"><svg class="i"><use href="#ic-cube"/></svg>進階編輯 · 合併／挖孔／切割</button><button data-action="settings-json"><svg class="i"><use href="#ic-download"/></svg>下載切片設定備忘 JSON</button><button data-action="screenshot"><svg class="i"><use href="#ic-camera"/></svg>下載預覽圖片</button>
     <button data-action="save"><svg class="i"><use href="#ic-save"/></svg>立即儲存本機</button>
     <div class="separator"></div>
     <button data-action="undo"><svg class="i"><use href="#ic-undo"/></svg>復原上一步</button>
@@ -127,15 +147,15 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div class="side-caption">工作室</div>
     <button class="side-button selected" data-side="workspace"><svg class="i"><use href="#ic-box"/></svg> 3D 編輯畫布</button>
     <button class="side-button" data-side="sketch"><svg class="i"><use href="#ic-pen"/></svg> 2D 繪圖轉立體</button>
-    <button class="side-button" data-side="import"><svg class="i"><use href="#ic-upload"/></svg> 匯入設計作品</button><button class="side-button" data-side="printer"><svg class="i"><use href="#ic-sliders"/></svg> 印表機與列印設定</button>
+    <button class="side-button" data-side="import"><svg class="i"><use href="#ic-upload"/></svg> 匯入設計作品</button><button class="side-button" data-side="advanced"><svg class="i"><use href="#ic-cube"/></svg> 進階模型編輯</button><button class="side-button" data-side="printer"><svg class="i"><use href="#ic-sliders"/></svg> 印表機與列印設定</button>
     <div class="side-caption" style="margin-top:27px">我的模型 <span id="modelCount" style="font-weight:500">(0)</span></div>
     <div id="layerList" class="layers"><div class="layer-empty">尚未加入模型</div></div>
     <div class="side-box"><div class="soft-tag"><svg class="i small"><use href="#ic-check"/></svg> 免費 · 本機優先</div><p>模型自動儲存在此裝置瀏覽器。換手機或平板時，請先匯出 GLB 備份，再到另一台裝置匯入。GLB 會附帶機型資訊；也可另外下載 JSON 設定備忘。</p><button id="backupBtn" class="pill sm light" style="width:100%"><svg class="i small"><use href="#ic-download"/></svg> 備份設計專案</button></div>
-    <div class="side-footer">3D Studio · v0.2.0<br>支援多品牌列印平台與模型匯出<br>開源 Three.js · 無會員與雲端上傳</div>
+    <div class="side-footer">3D Studio · v0.3.0<br>支援多品牌列印平台與模型匯出<br>開源 Three.js · 無會員與雲端上傳</div>
   </nav>
   <main class="workspace" id="workspace">
     <div id="stage" aria-label="可操作的三維建模畫布"></div>
-    <div class="stage-head"><div><h1>創作空間</h1><p>點選模型、自由旋轉，讓想法立體成形。</p><button id="printerBtn" class="printer-shortcut" title="選擇 3D 印表機"><svg class="i small"><use href="#ic-sliders"/></svg><span id="printerBtnText">Creator 5 Pro</span><svg class="i small"><use href="#ic-chevron"/></svg></button></div><span class="version-pill">BETA 02</span></div>
+    <div class="stage-head"><div><h1>創作空間</h1><p>點選模型、自由旋轉，讓想法立體成形。</p><button id="printerBtn" class="printer-shortcut" title="選擇 3D 印表機"><svg class="i small"><use href="#ic-sliders"/></svg><span id="printerBtnText">Creator 5 Pro</span><svg class="i small"><use href="#ic-chevron"/></svg></button></div><span class="version-pill">BETA 03</span></div>
     <div class="view-actions"><button data-view="iso">3D</button><button data-view="top">頂視</button><button class="small-screen-hide" data-view="front">正視</button><button class="small-screen-hide" data-view="right">側視</button><button id="gridBtn" title="顯示／隱藏網格"><svg class="i small"><use href="#ic-grid"/></svg></button></div>
     <div id="emptyStage" class="empty-stage"><div class="empty-icon">◇</div><h3>從一個立體形狀開始</h3><p>新增模型、匯入 STL，或用觸控筆畫一個輪廓。</p></div>
     <div class="stage-badges"><div class="mini-badge"><strong id="bedStatus">列印平台</strong> · <span id="bedSize">256 × 256 × 256 mm</span></div><div id="sceneInfo" class="mini-badge">等待模型載入…</div></div>
@@ -155,6 +175,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <div class="section"><div class="section-head"><h3>外觀顏色</h3><small>僅供編輯預覽</small></div><div class="color-row" id="colors"><button class="color-chip" data-color="#d9e6ff" style="background:#d9e6ff" title="珍珠藍"></button><button class="color-chip" data-color="#fafafa" style="background:#fafafa" title="珍珠白"></button><button class="color-chip" data-color="#c4c7cd" style="background:#c4c7cd" title="金屬灰"></button><button class="color-chip" data-color="#f3b8a8" style="background:#f3b8a8" title="玫瑰粉"></button><button class="color-chip" data-color="#b6d6c4" style="background:#b6d6c4" title="鼠尾草綠"></button><button class="color-chip" data-color="#303d51" style="background:#303d51" title="石墨黑"></button><input id="customColor" type="color" title="自訂顏色" value="#d9e6ff" style="width:30px;height:30px;border:0;background:transparent;padding:0;cursor:pointer"/></div><p class="dimension-note">STL 不保存顏色；如需多色列印，請在 Flash Studio 指定不同零件或噴頭。</p></div>
       <div class="section" style="border:0"><div class="mini-actions"><button id="duplicateBtn" class="pill sm light"><svg class="i small"><use href="#ic-copy"/></svg> 複製</button><button id="placeBtn" class="pill sm light"><svg class="i small"><use href="#ic-grid"/></svg> 放到平台</button><button id="centerBtn" class="pill sm light"><svg class="i small"><use href="#ic-move"/></svg> 置中</button><button id="fitBtn" class="pill sm light"><svg class="i small"><use href="#ic-scale"/></svg> 適配平台</button><button id="resetRotationBtn" class="pill sm light"><svg class="i small"><use href="#ic-rotate"/></svg> 歸零角度</button><button id="deleteBtn" class="pill sm danger"><svg class="i small"><use href="#ic-trash"/></svg> 刪除</button></div></div>
     </div>
+    <div class="section" style="padding-top:15px"><button id="advancedBtn" class="pill light advanced-entry"><span class="left"><svg class="i small"><use href="#ic-cube"/></svg>進階編輯</span><svg class="i small"><use href="#ic-chevron"/></svg></button><p class="advanced-muted">合併、挖孔、切割與網格檢查；不常用的工具集中在此。</p></div>
     <div class="section" style="margin-top:5px;border-top:1px solid var(--line);border-bottom:0"><div class="section-head"><h3>快速加入形狀</h3><small>基本建模</small></div><div class="shape-picker"><button class="shape-item" data-shape="rounded"><svg class="i large"><use href="#ic-cube"/></svg>圓角底座</button><button class="shape-item" data-shape="box"><svg class="i large"><use href="#ic-box"/></svg>方塊</button><button class="shape-item" data-shape="sphere"><svg class="i large"><use href="#ic-circle"/></svg>球體</button><button class="shape-item" data-shape="cylinder"><svg class="i large"><use href="#ic-cylinder"/></svg>圓柱</button><button class="shape-item" data-shape="cone"><svg class="i large"><use href="#ic-cone"/></svg>圓錐</button><button class="shape-item" data-shape="ring"><svg class="i large"><use href="#ic-ring"/></svg>圓環</button></div></div>
     <p class="notice">本工作室負責模型編輯、選擇機型與列印空間檢查。真正的層高、填充率、支撐與速度仍須在對應切片軟體設定。</p>
   </aside>
@@ -163,6 +184,44 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <input id="fileInput" type="file" class="hidden" accept=".stl,.obj,.glb,.svg,.3mf" multiple />
 <div class="overlay hidden" id="sketchModal" role="dialog" aria-modal="true" aria-label="手繪立體造型"><div class="dialog"><div class="dialog-head"><div><div class="dialog-title">手繪變立體 <span style="font-size:12px;color:#8ca1c1;font-weight:500">Sketch → 3D</span></div><div class="dialog-sub">用觸控筆或滑鼠畫出一個封閉的外輪廓，系統會自動生成有厚度的 3D 模型。</div></div><button class="icon-btn" id="sketchClose"><svg class="i"><use href="#ic-x"/></svg></button></div><div class="sketch-wrap"><canvas id="sketchCanvas" width="700" height="380" aria-label="自由繪圖畫布"></canvas></div><div class="dialog-footer"><div class="field" style="width:145px"><label>拉伸厚度（mm）</label><input id="sketchDepth" type="number" value="8" min="1" max="200" step="1"/></div><div style="display:flex;gap:8px;align-items:center"><button id="sketchClear" class="pill light"><svg class="i small"><use href="#ic-trash"/></svg>清除</button><button id="sketchCreate" class="pill primary"><svg class="i small"><use href="#ic-check"/></svg>生成 3D 模型</button></div></div><p class="notice">適合名字牌、裝飾底座、外輪廓拉伸。不是自動將平面繪畫轉成完整雕塑；請避免線條自我交叉。</p></div></div>
 <div class="overlay hidden" id="shapeModal" role="dialog" aria-modal="true" aria-label="新增立體模型"><div class="dialog" style="max-width:490px"><div class="dialog-head"><div><div class="dialog-title">新增 3D 形狀</div><div class="dialog-sub">選一個基本形狀，開始自由組合自己的設計。</div></div><button class="icon-btn" id="shapeClose"><svg class="i"><use href="#ic-x"/></svg></button></div><div class="shape-picker" style="grid-template-columns:repeat(3,1fr)"><button class="shape-item" data-shape="rounded"><svg class="i large"><use href="#ic-cube"/></svg>圓角底座</button><button class="shape-item" data-shape="box"><svg class="i large"><use href="#ic-box"/></svg>方塊</button><button class="shape-item" data-shape="sphere"><svg class="i large"><use href="#ic-circle"/></svg>球體</button><button class="shape-item" data-shape="cylinder"><svg class="i large"><use href="#ic-cylinder"/></svg>圓柱</button><button class="shape-item" data-shape="cone"><svg class="i large"><use href="#ic-cone"/></svg>圓錐</button><button class="shape-item" data-shape="ring"><svg class="i large"><use href="#ic-ring"/></svg>圓環</button></div></div></div>
+<div class="overlay hidden" id="advancedModal" role="dialog" aria-modal="true" aria-label="進階模型編輯">
+  <div class="dialog advanced-modal">
+    <div class="dialog-head"><div><div class="dialog-title">進階模型編輯 <span style="color:#949cab;font-size:12px;font-weight:600">Tools</span></div><div class="dialog-sub">只在需要時使用。所有幾何修改均可復原。</div></div><button id="advancedClose" class="icon-btn" aria-label="關閉"><svg class="i"><use href="#ic-x"/></svg></button></div>
+    <div class="advanced-tabs" role="tablist">
+      <button class="advanced-tab active" data-advanced-tab="boolean" role="tab" aria-selected="true">合併／相減</button>
+      <button class="advanced-tab" data-advanced-tab="hole" role="tab" aria-selected="false">快速挖孔</button>
+      <button class="advanced-tab" data-advanced-tab="split" role="tab" aria-selected="false">模型切割</button>
+      <button class="advanced-tab" data-advanced-tab="repair" role="tab" aria-selected="false">檢查整理</button>
+    </div>
+    <div class="advanced-pane active" data-advanced-pane="boolean">
+      <p class="advanced-help">先在畫布選取主要模型 A，第二個模型 B 可選作為加上、扣除或交集。請先調整兩個模型的大小與位置。</p>
+      <div class="advanced-row"><div class="advanced-control"><label>模型 A（主要）</label><select id="booleanA"></select></div><div class="advanced-control"><label>模型 B（工具）</label><select id="booleanB"></select></div></div>
+      <div class="advanced-control"><label>幾何運算</label><select id="booleanType"><option value="union">實體合併 A + B</option><option value="subtract">挖除 A − B</option><option value="intersect">保留共同部分 A ∩ B</option></select></div>
+      <button id="booleanApply" class="pill primary advanced-action">執行幾何運算</button>
+      <p class="advanced-help">結果會取代兩個原模型。只適合封閉實體模型；匯入的破損網格可能無法成功。建議先下載 GLB 備份。</p>
+    </div>
+    <div class="advanced-pane" data-advanced-pane="hole">
+      <p class="advanced-help">在選取模型上，沿 Z 軸建立貫穿圓孔。適合底座、墊片及簡單容器，並非任意曲面雕刻。</p>
+      <div class="advanced-row three"><div class="advanced-control"><label>孔徑 mm</label><input id="holeDiameter" type="number" min="0.5" max="400" step="0.5" value="8"/></div><div class="advanced-control"><label>X 偏移 mm</label><input id="holeOffsetX" type="number" step="0.5" value="0"/></div><div class="advanced-control"><label>Y 偏移 mm</label><input id="holeOffsetY" type="number" step="0.5" value="0"/></div></div>
+      <button id="holeApply" class="pill primary advanced-action">在選取模型挖出圓孔</button>
+      <p class="advanced-help">偏移以模型外框中心為基準。孔會自動穿過模型高度，匯出 STL 前仍須檢查最薄處壁厚。</p>
+    </div>
+    <div class="advanced-pane" data-advanced-pane="split">
+      <p class="advanced-help">以指定軸向的平面切開模型，保留切開後的兩個封閉部分，方便分件列印。</p>
+      <div class="advanced-row"><div class="advanced-control"><label>切割方向</label><select id="splitAxis"><option value="z">Z · 水平切割</option><option value="x">X · 左右切割</option><option value="y">Y · 前後切割</option></select></div><div class="advanced-control"><label>由外框起算位置（%）</label><input id="splitPercent" type="number" min="1" max="99" step="1" value="50"/></div></div>
+      <button id="splitApply" class="pill primary advanced-action">切割為兩個模型</button>
+      <p class="advanced-help">切割完成後會建立兩個模型並保留原始空間位置；可再透過移動工具將它們分開。</p>
+    </div>
+    <div class="advanced-pane" data-advanced-pane="repair">
+      <p class="advanced-help">檢查模型是否有開放邊、非流形邊、零面積三角形；這是快速檢查，不等於完整的列印認證。</p>
+      <button id="healthApply" class="pill light advanced-action">檢查選取模型</button>
+      <div id="healthReport" class="advanced-report" aria-live="polite">尚未檢查模型。</div>
+      <button id="repairApply" class="pill primary advanced-action">簡易整理 · 清除退化面／頂點焊接／重算法線</button>
+      <p class="advanced-help">簡易整理無法自動補上大破洞或保證水密；複雜模型仍建議用 Blender／MeshLab 修補。</p>
+    </div>
+    <div class="advanced-footer-note">此版本使用免費開源幾何函式庫。首次運算時需連網載入，手機處理高面數網格可能較慢。切片及實體列印仍在品牌切片軟體完成。</div>
+  </div>
+</div>
 <div class="overlay hidden" id="printerModal" role="dialog" aria-modal="true" aria-label="印表機設定">
  <div class="dialog printer-dialog">
   <div class="dialog-head"><div><div class="dialog-title">印表機與列印設定</div><div class="dialog-sub">先選機型，再設計；平台尺寸會同步更新。設定僅供匯出備忘與列印檢查。</div></div><button class="icon-btn" id="printerClose" title="關閉"><svg class="i"><use href="#ic-x"/></svg></button></div>
@@ -199,6 +258,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const $ = id => document.getElementById(id);
 const svgIcon = name => `<svg class="i small"><use href="#ic-${name}"/></svg>`;
@@ -337,7 +397,7 @@ function readPrinterForm(){
 }
 function savePrinterDialog(){try{profileSet(readPrinterForm());changed();$('printerModal').classList.add('hidden');notify(`已切換為 ${printerTitle()}，模型已自動檢查平台範圍`)}catch(e){notify(e.message)}}
 function exportPrinterSettings(){
- const settings={schema:'3d-studio-print-notes-v1',appVersion:'0.2.0',createdAt:new Date().toISOString(),
+ const settings={schema:'3d-studio-print-notes-v1',appVersion:'0.3.0',createdAt:new Date().toISOString(),
  printer:{...printer,name:printerTitle(),slicer:printerProfile().slicer},
  bounds:boundsStatus().text,
  important:'此 JSON 是切片設定備忘，不會讓 STL 自動套用切片參數，也不是印表機可直接執行的 G-code。'};
@@ -393,12 +453,197 @@ sketchCanvas.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.butto
 sketchCanvas.addEventListener('pointermove',e=>{if(!drawing)return;const p=sketchPoint(e),last=points.at(-1);if(Math.hypot(p.x-last.x,p.y-last.y)>2.5){points.push(p);drawSketch()}});
 for(const evt of ['pointerup','pointercancel'])sketchCanvas.addEventListener(evt,()=>{drawing=false});
 function makeSketch(){if(points.length<5)return notify('請先畫出一個封閉的外輪廓');const depth=Number($('sketchDepth').value);if(!Number.isFinite(depth)||depth<1||depth>200)return notify('厚度需介於 1～200 mm');const p=points.filter((x,i)=>i===0||i===points.length-1||Math.hypot(x.x-points[i-1].x,x.y-points[i-1].y)>1);const shape=new THREE.Shape();const scale=.27;shape.moveTo((p[0].x-350)*scale,(190-p[0].y)*scale);for(let i=1;i<p.length;i++)shape.lineTo((p[i].x-350)*scale,(190-p[i].y)*scale);shape.closePath();try{const bevel=Math.min(.6,depth/6);const geo=new THREE.ExtrudeGeometry(shape,{depth:depth-2*bevel,bevelEnabled:true,bevelThickness:bevel,bevelSize:bevel,bevelSegments:2,steps:1,curveSegments:12});geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.44,side:THREE.DoubleSide}));const m=alignModel(mesh);m.name='手繪立體造型';pushUndo();root.add(m);select(m);changed();$('sketchModal').classList.add('hidden');notify('手繪輪廓已生成 3D 模型')}catch(e){console.error(e);notify('轉換失敗，請改用簡單、不要交叉的外輪廓')}}
+
+// v0.3.0 Advanced geometry — optional, loaded only when the user invokes it.
+// Three.js itself stays as the v0.2.0 import; the CSG dependency is not needed for basic editing.
+const ADVANCED_MAX_TRIANGLES = 24000;
+let csgLibraryPromise = null;
+function csgLibrary(){return csgLibraryPromise ||= import('three-bvh-csg').catch(e=>{csgLibraryPromise=null;throw new Error('幾何運算元件無法載入，請檢查網路後重試')});}
+function showAdvanced(tab='boolean'){
+ mobileClose();hideMenu();refreshAdvancedSelectors();setAdvancedTab(tab);$('advancedModal').classList.remove('hidden');
+}
+function setAdvancedTab(tab){
+ document.querySelectorAll('[data-advanced-tab]').forEach(b=>{const yes=b.dataset.advancedTab===tab;b.classList.toggle('active',yes);b.setAttribute('aria-selected',String(yes))});
+ document.querySelectorAll('[data-advanced-pane]').forEach(p=>p.classList.toggle('active',p.dataset.advancedPane===tab));
+}
+function refreshAdvancedSelectors(){
+ const a=$('booleanA'),b=$('booleanB'),oldB=b.value;
+ for(const el of [a,b])el.replaceChildren();
+ for(const model of root.children){
+  const label=model.name||'未命名模型';const id=idOf(model);
+  for(const el of [a,b]){const op=document.createElement('option');op.value=id;op.textContent=label;el.append(op)}
+ }
+ a.value=selected?idOf(selected):(root.children[0]?idOf(root.children[0]):'');
+ b.value=oldB!==a.value && [...b.options].some(o=>o.value===oldB)?oldB:(root.children.find(o=>idOf(o)!==a.value)?idOf(root.children.find(o=>idOf(o)!==a.value)):'');
+}
+function findModelById(id){return root.children.find(o=>idOf(o)===id)||null}
+function meshTriangleCount(model){return allMeshes(model).reduce((n,o)=>n+Math.floor((o.geometry?.index?.count||o.geometry?.attributes?.position?.count||0)/3),0)}
+// Export world-space triangles with consistent attributes, including when an imported GLB uses nested groups.
+function csgGeometry(model){
+ model.updateWorldMatrix(true,true);
+ const geos=[];
+ for(const mesh of allMeshes(model)){
+  if(!mesh.visible||!mesh.geometry?.getAttribute('position'))continue;
+  let geo=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone();
+  geo.applyMatrix4(mesh.matrixWorld);
+  for(const name of Object.keys(geo.attributes))if(name!=='position')geo.deleteAttribute(name);
+  geo.clearGroups();const indexed=mergeVertices(geo,1e-5);geo.dispose();indexed.computeVertexNormals();geos.push(indexed);
+ }
+ if(!geos.length)throw new Error('模型沒有可以運算的三角形表面');
+ if(geos.length===1)return geos[0];
+ const merged=mergeGeometries(geos,false);
+ geos.forEach(g=>g.dispose());
+ if(!merged)throw new Error('模型網格無法合併，請嘗試更簡單的 STL');
+ return merged;
+}
+function brushForGeometry(csg,geo){const mat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5});const brush=new csg.Brush(geo,mat);brush.updateMatrixWorld();return brush}
+function objectFromBooleanGeometry(geometry,name,col=MODEL_COLOR){
+ if(!geometry?.getAttribute('position')?.count)throw new Error('這個運算沒有產生實體，請調整模型交疊位置');
+ const g=geometry.clone();for(const key of Object.keys(g.attributes))if(key!=='position')g.deleteAttribute(key);
+ g.clearGroups();g.computeVertexNormals();g.computeBoundingBox();
+ const bb=g.boundingBox,c=bb.getCenter(new THREE.Vector3());g.translate(-c.x,-c.y,0);
+ const group=new THREE.Group();group.name=name;idOf(group);group.position.set(c.x,c.y,0);
+ const mesh=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:col,roughness:.43,metalness:.025,side:THREE.DoubleSide}));mesh.castShadow=true;mesh.receiveShadow=true;
+ group.add(mesh);return group;
+}
+function triangleAllowance(...models){
+ const total=models.reduce((a,m)=>a+(m?meshTriangleCount(m):0),0);
+ if(total>ADVANCED_MAX_TRIANGLES)throw new Error(`此工具每次最多處理約 ${ADVANCED_MAX_TRIANGLES.toLocaleString()} 個三角面；目前 ${total.toLocaleString()} 面。請改用較簡單的模型或在電腦上精修。`);
+}
+async function evaluateGeometry(aGeometry,bGeometry,type,lib){
+ const evaluator=new lib.Evaluator();evaluator.attributes=['position','normal'];evaluator.useGroups=false;
+ const a=brushForGeometry(lib,aGeometry),b=brushForGeometry(lib,bGeometry);
+ const op=({union:lib.ADDITION,subtract:lib.SUBTRACTION,intersect:lib.INTERSECTION})[type];
+ if(op===undefined)throw new Error('無效的幾何運算');
+ const result=evaluator.evaluate(a,b,op);
+ if(!result?.geometry?.attributes?.position?.count)throw new Error('沒有產生有效的交集／實體，請檢查模型位置');
+ return result.geometry;
+}
+function modelColor(m){const f=allMeshes(m)[0],mat=Array.isArray(f?.material)?f.material[0]:f?.material;return mat?.color?.getHex?.()||MODEL_COLOR}
+async function runAdvanced(text,task){
+ setBusy(true,text);await new Promise(r=>setTimeout(r,40));
+ try{await task()}catch(e){console.error('Advanced operation',e);notify('處理失敗：'+(e?.message||String(e)))}finally{setBusy(false)}
+}
+function commitAdvanced(replacements,removed,primaryName){
+ pushUndo();transform.detach();for(const m of removed)root.remove(m);
+ for(const m of replacements)root.add(m);
+ select(replacements[0]||null);changed();$('advancedModal').classList.add('hidden');
+ notify(`${primaryName}完成，可使用復原返回上一版`);
+}
+async function runBoolean(){
+ const a=findModelById($('booleanA').value),b=findModelById($('booleanB').value);
+ if(!a||!b||a===b)return notify('請選擇兩個不同的模型');
+ const type=$('booleanType').value;
+ if(!confirm('即將以運算結果取代模型 A、B。確定執行？（可復原，但仍建議備份 GLB）'))return;
+ await runAdvanced('正在計算實體幾何…',async()=>{
+  triangleAllowance(a,b);
+  const lib=await csgLibrary(),ga=csgGeometry(a),gb=csgGeometry(b);
+  const result=await evaluateGeometry(ga,gb,type,lib);
+  const name=({'union':'合併','subtract':'挖除','intersect':'交集'})[type];
+  const output=objectFromBooleanGeometry(result,`${name} · ${a.name}`,modelColor(a));
+  commitAdvanced([output],[a,b],name);
+ });
+}
+async function runHole(){
+ const a=activeModel();if(!a)return notify('請先選取要挖孔的模型');
+ const dia=Number($('holeDiameter').value),dx=Number($('holeOffsetX').value),dy=Number($('holeOffsetY').value);
+ if(!Number.isFinite(dia)||dia<.5||dia>400||![dx,dy].every(Number.isFinite))return notify('請檢查孔徑與 X、Y 偏移數字');
+ if(!confirm(`將在「${a.name}」挖出直徑 ${dia} mm 的貫穿圓孔。確定嗎？`))return;
+ await runAdvanced('正在挖孔…',async()=>{
+  triangleAllowance(a);const lib=await csgLibrary(),b=bbox(a),size=b.getSize(new THREE.Vector3());
+  const c=b.getCenter(new THREE.Vector3());
+  const hole=new THREE.CylinderGeometry(dia/2,dia/2,Math.max(size.z+20,25),48,1,false);
+  hole.rotateX(Math.PI/2);hole.translate(c.x+dx,c.y+dy,c.z);hole.computeVertexNormals();
+  const aGeometry=csgGeometry(a),result=await evaluateGeometry(aGeometry,hole,'subtract',lib);
+  const output=objectFromBooleanGeometry(result,`挖孔 · ${a.name}`,modelColor(a));
+  commitAdvanced([output],[a],'挖孔');
+ });
+}
+async function runSplit(){
+ const a=activeModel();if(!a)return notify('請先選取要切割的模型');
+ const axis=$('splitAxis').value,percent=Number($('splitPercent').value);
+ if(!['x','y','z'].includes(axis)||!Number.isFinite(percent)||percent<=0||percent>=100)return notify('切割位置需介於 1～99%');
+ if(!confirm('將模型切成兩個封閉零件。確定執行？'))return;
+ await runAdvanced('正在切割模型…',async()=>{
+  triangleAllowance(a);
+  const lib=await csgLibrary(),bb=bbox(a),sz=bb.getSize(new THREE.Vector3());
+  if(sz[axis]<.05)throw new Error('切割方向的模型厚度太小');
+  const position=bb.min[axis]+sz[axis]*percent/100,margin=Math.max(100,sz.length()*2,printer.x,printer.y,printer.z);
+  const size=new THREE.Vector3(margin*2,margin*2,margin*2),center=bb.getCenter(new THREE.Vector3());
+  const one=size.clone(),two=size.clone();one[axis]=margin;two[axis]=margin;
+  const first=new THREE.BoxGeometry(one.x,one.y,one.z),second=new THREE.BoxGeometry(two.x,two.y,two.z);
+  const center1=center.clone(),center2=center.clone();center1[axis]=position-margin/2;center2[axis]=position+margin/2;
+  first.translate(center1.x,center1.y,center1.z);second.translate(center2.x,center2.y,center2.z);
+  const world=csgGeometry(a);
+  const left=await evaluateGeometry(world,first,'intersect',lib),right=await evaluateGeometry(world,second,'intersect',lib);
+  const outputA=objectFromBooleanGeometry(left,`${a.name} · A`,modelColor(a)),outputB=objectFromBooleanGeometry(right,`${a.name} · B`,modelColor(a));
+  commitAdvanced([outputA,outputB],[a],'切割');
+ });
+}
+// Vertex-quantized edge diagnostics: detect open/non-manifold edges, not internal self-intersections.
+function triangleHealth(geometry,maxFaces=90000){
+ const pos=geometry?.getAttribute('position');if(!pos)return {faces:0,open:0,nonmanifold:0,degenerate:0,skipped:false};
+ const faceCount=Math.floor((geometry.index?.count||pos.count)/3);
+ if(faceCount>maxFaces)return {faces:faceCount,skipped:true};
+ const vertexByPoint=new Map(),edgeCount=new Map();let id=0,degenerate=0;
+ function pointId(idx){const x=pos.getX(idx),y=pos.getY(idx),z=pos.getZ(idx);const k=`${Math.round(x*1000)},${Math.round(y*1000)},${Math.round(z*1000)}`;if(!vertexByPoint.has(k))vertexByPoint.set(k,++id);return vertexByPoint.get(k)}
+ for(let i=0;i<faceCount;i++){
+  const v=[];for(let j=0;j<3;j++){const k=i*3+j;v.push(pointId(geometry.index?geometry.index.getX(k):k));}
+  if(new Set(v).size!==3){degenerate++;continue;}
+  for(let j=0;j<3;j++){const x=Math.min(v[j],v[(j+1)%3]),y=Math.max(v[j],v[(j+1)%3]),key=`${x}_${y}`;edgeCount.set(key,(edgeCount.get(key)||0)+1)}
+ }
+ let open=0,nonmanifold=0;for(const n of edgeCount.values()){if(n===1)open++;if(n>2)nonmanifold++}
+ return {faces:faceCount,open,nonmanifold,degenerate,skipped:false};
+}
+function assessModel(model){
+ const meshs=allMeshes(model);if(!meshs.length)throw new Error('選取模型沒有可檢查的三角網格');
+ const counts={faces:0,open:0,nonmanifold:0,degenerate:0,skipped:false};
+ for(const m of meshs){const stat=triangleHealth(m.geometry);counts.faces+=stat.faces;counts.open+=stat.open||0;counts.nonmanifold+=stat.nonmanifold||0;counts.degenerate+=stat.degenerate||0;counts.skipped ||=stat.skipped;}
+ return counts;
+}
+function healthReport(){
+ const a=activeModel();if(!a)return notify('請先選取模型');
+ const r=assessModel(a);
+ const note=r.skipped?'（面數較多，已跳過完整邊緣檢查）':(!r.open&&!r.nonmanifold&&!r.degenerate?'快速檢查未發現開放邊或非流形邊，但仍可能存在自相交。':'檢測到需要注意的網格問題。');
+ $('healthReport').textContent=`模型：${a.name}\n三角面數：${r.faces.toLocaleString()}\n開放邊：${r.skipped?'未檢查':r.open}\n非流形邊：${r.skipped?'未檢查':r.nonmanifold}\n退化面：${r.skipped?'未檢查':r.degenerate}\n${note}`;
+ return r;
+}
+async function runRepair(){
+ const a=activeModel();if(!a)return notify('請先選取模型');
+ const faces=meshTriangleCount(a);
+ if(faces>50000)return notify('簡易整理限 50,000 面以下，請用電腦專業修模工具處理此模型');
+ if(!confirm('會移除零面積面、焊接重合頂點並重算法線；可能改變原本的平滑外觀。確定執行嗎？'))return;
+ await runAdvanced('正在整理網格…',async()=>{
+  const updates=[];
+  for(const mesh of allMeshes(a)){
+   const g=mesh.geometry;if(!g?.attributes?.position)continue;
+   const pos=g.getAttribute('position'),count=Math.floor((g.index?.count||pos.count)/3),points=[];
+   const u=new THREE.Vector3(),v=new THREE.Vector3(),w=new THREE.Vector3(),v1=new THREE.Vector3(),v2=new THREE.Vector3();
+   for(let i=0;i<count;i++){
+    const ids=[0,1,2].map(j=>g.index?g.index.getX(i*3+j):i*3+j);
+    u.fromBufferAttribute(pos,ids[0]);v.fromBufferAttribute(pos,ids[1]);w.fromBufferAttribute(pos,ids[2]);
+    v1.subVectors(v,u);v2.subVectors(w,u);if(v1.cross(v2).lengthSq()<1e-16)continue;
+    for(const x of [u,v,w])points.push(x.x,x.y,x.z);
+   }
+   if(!points.length)throw new Error('模型網格沒有有效的三角面');
+   const raw=new THREE.BufferGeometry();raw.setAttribute('position',new THREE.Float32BufferAttribute(points,3));
+   const welded=mergeVertices(raw,1e-4);welded.computeVertexNormals();updates.push({mesh,geometry:welded});
+  }
+  if(!updates.length)throw new Error('沒有找到可整理的網格');
+  pushUndo();for(const item of updates){item.mesh.geometry=item.geometry;}
+  changed();healthReport();notify('已完成簡易整理，請檢查表面與列印結果');
+ });
+}
+
 // UI events
 $('menuBtn').onclick=()=>mobileOpen('sidebar');$('inspectorBtn').onclick=()=>mobileOpen('inspector');$('closeInspector').onclick=mobileClose;$('mobileScrim').onclick=mobileClose;
 $('importBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=e=>importFiles([...e.target.files]);
 $('sketchBtn').onclick=$('mobileSketch').onclick=()=>{points=[];drawSketch();$('sketchModal').classList.remove('hidden');mobileClose()};
 $('sketchClose').onclick=()=>$('sketchModal').classList.add('hidden');$('sketchClear').onclick=()=>{points=[];drawSketch()};$('sketchCreate').onclick=makeSketch;
 $('addBtn').onclick=()=>$('shapeModal').classList.remove('hidden');$('shapeClose').onclick=()=>$('shapeModal').classList.add('hidden');document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>addShape(b.dataset.shape));
+$('advancedBtn').onclick=()=>showAdvanced();$('advancedClose').onclick=()=>$('advancedModal').classList.add('hidden');
+document.querySelectorAll('[data-advanced-tab]').forEach(b=>b.onclick=()=>setAdvancedTab(b.dataset.advancedTab));
+$('booleanApply').onclick=runBoolean;$('holeApply').onclick=runHole;$('splitApply').onclick=runSplit;$('healthApply').onclick=healthReport;$('repairApply').onclick=runRepair;
 $('printerBtn').onclick=openPrinter;$('printerClose').onclick=()=>{$('printerModal').classList.add('hidden')};$('printerSave').onclick=savePrinterDialog;$('printerExportSettings').onclick=()=>{try{const data=readPrinterForm();profileSet(data);changed();exportPrinterSettings()}catch(e){notify(e.message)}};
 $('printerProfile').addEventListener('change',e=>{const base=PRINTER_PROFILES.find(p=>p.id===e.target.value)||PRINTER_PROFILES[0];$('printerX').value=base.x;$('printerY').value=base.y;$('printerZ').value=base.z;$('printerNozzle').value=base.nozzle;$('customPrinterNameWrap').classList.toggle('hidden',base.id!=='custom');$('slicerHint').textContent='建議切片軟體：'+base.slicer;});
 $('exportBtn').onclick=exportSTL;$('backupBtn').onclick=exportGLB;$('duplicateBtn').onclick=duplicateSelected;$('placeBtn').onclick=placeOnPlate;$('centerBtn').onclick=centerSelected;$('fitBtn').onclick=fitSelected;$('resetRotationBtn').onclick=resetSelectedRotation;$('deleteBtn').onclick=removeSelected;
@@ -406,16 +651,16 @@ $('modelName').addEventListener('change',e=>{if(!activeModel())return;pushUndo()
 for(const id of ['sizeX','sizeY','sizeZ','posX','posY','posZ','rotX','rotY','rotZ'])$(id).addEventListener('change',e=>applyInspector(id,e.target.value));
 $('colors').addEventListener('click',e=>{const btn=e.target.closest('[data-color]');if(btn)setColor(btn.dataset.color)});$('customColor').addEventListener('change',e=>setColor(e.target.value));
 $('moreBtn').onclick=e=>{e.stopPropagation();$('moreMenu').classList.toggle('hidden')};
-document.querySelectorAll('#moreMenu [data-action]').forEach(b=>b.onclick=async()=>{hideMenu();switch(b.dataset.action){case'import':$('fileInput').click();break;case'export-glb':await exportGLB();break;case'printer':openPrinter();break;case'settings-json':exportPrinterSettings();break;case'screenshot':screenshot();break;case'save':await saveProject();notify('已送出本機儲存');break;case'undo':undo();break;case'redo':redo();break;case'new':if(confirm('建立新的空白專案？\n請先匯出 GLB 備份，這會取代本機目前的自動儲存。')){pushUndo();root.clear();select(null);changed();notify('已建立空白專案')}break;case'about':alert('3D Studio · v0.2.0\n\n✅ STL / OBJ / GLB / 3MF / SVG 匯入\n✅ 形狀建模、尺寸與位置調整\n✅ 手繪輪廓拉伸成 3D\n✅ 360° 預覽、STL 匯出、GLB 備份\n✅ 多品牌機型切換與平台範圍檢查\n✅ 列印設定備忘 JSON、模型一鍵適配平台\n✅ IndexedDB 本機自動儲存\n\n⚠️ 未包含自由雕刻、完整網格修補、3MF 匯入、AI 圖轉 3D、自動切片或一鍵列印。\n\n請將 STL 匯入你所選機型對應的切片軟體，切片後再傳送列印。\n\n此網站只使用免費 Three.js 和瀏覽器內建能力，需連網載入 3D 函式庫；本機模型不會上傳伺服器。');break;}});
+document.querySelectorAll('#moreMenu [data-action]').forEach(b=>b.onclick=async()=>{hideMenu();switch(b.dataset.action){case'import':$('fileInput').click();break;case'export-glb':await exportGLB();break;case'printer':openPrinter();break;case'advanced':showAdvanced();break;case'settings-json':exportPrinterSettings();break;case'screenshot':screenshot();break;case'save':await saveProject();notify('已送出本機儲存');break;case'undo':undo();break;case'redo':redo();break;case'new':if(confirm('建立新的空白專案？\n請先匯出 GLB 備份，這會取代本機目前的自動儲存。')){pushUndo();root.clear();select(null);changed();notify('已建立空白專案')}break;case'about':alert('3D Studio · v0.3.0\n\n✅ STL / OBJ / GLB / 3MF / SVG 匯入\n✅ 形狀建模、尺寸與位置調整\n✅ 手繪輪廓拉伸成 3D\n✅ 360° 預覽、STL 匯出、GLB 備份\n✅ 多品牌機型切換與平台範圍檢查\n✅ 列印設定備忘 JSON、模型一鍵適配平台\n✅ IndexedDB 本機自動儲存\n\n✅ 基本布林合併、挖孔、切割及簡易網格檢查\n\n⚠️ 尚未包含專業自由雕刻、完整自動補洞、AI 圖轉 3D、自動切片或一鍵列印。\n\n請將 STL 匯入你所選機型對應的切片軟體，切片後再傳送列印。\n\n此網站只使用免費 Three.js 和瀏覽器內建能力，需連網載入 3D 函式庫；本機模型不會上傳伺服器。');break;}});
 document.addEventListener('click',e=>{if(!e.target.closest('#moreBtn')&&!e.target.closest('#moreMenu'))hideMenu()});
-document.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x===b));const a=b.dataset.side;if(a==='sketch')$('sketchBtn').click();else if(a==='import')$('fileInput').click();else if(a==='printer')openPrinter();else mobileClose()});
+document.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x===b));const a=b.dataset.side;if(a==='sketch')$('sketchBtn').click();else if(a==='import')$('fileInput').click();else if(a==='printer')openPrinter();else if(a==='advanced')showAdvanced();else mobileClose()});
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));$('frameBtn').onclick=frame;$('undoBtn').onclick=undo;$('redoBtn').onclick=redo;
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));$('gridBtn').onclick=()=>{grid.visible=!grid.visible;notify(grid.visible?'已顯示平台網格':'已隱藏平台網格')};
-for(const modal of ['sketchModal','shapeModal','printerModal'])$(modal).addEventListener('click',e=>{if(e.target===$(modal))$(modal).classList.add('hidden')});
+for(const modal of ['sketchModal','shapeModal','printerModal','advancedModal'])$(modal).addEventListener('click',e=>{if(e.target===$(modal))$(modal).classList.add('hidden')});
 stage.addEventListener('pointerdown',e=>{downAt={x:e.clientX,y:e.clientY,t:Date.now()}});
 stage.addEventListener('pointerup',e=>{if(!downAt||Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y)>6||Date.now()-downAt.t>500)return;downAt=null;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(root.children,true);if(hits.length){let target=hits[0].object;while(target.parent&&target.parent!==root)target=target.parent;if(root.children.includes(target))select(target);}else if(!e.target.closest('.tool-dock'))select(null);});
 stage.addEventListener('dragover',e=>{e.preventDefault()});stage.addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files?.length)importFiles([...e.dataTransfer.files])});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){mobileClose();hideMenu();$('sketchModal').classList.add('hidden');$('shapeModal').classList.add('hidden');$('printerModal').classList.add('hidden');return}const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if(typing)return;if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeSelected()}if(e.key.toLowerCase()==='g'&&!e.ctrlKey&&!e.metaKey)setTool('translate');if(e.key.toLowerCase()==='r'&&!e.ctrlKey&&!e.metaKey)setTool('rotate');if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey)setTool('scale');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){mobileClose();hideMenu();$('sketchModal').classList.add('hidden');$('shapeModal').classList.add('hidden');$('printerModal').classList.add('hidden');$('advancedModal').classList.add('hidden');return}const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if(typing)return;if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeSelected()}if(e.key.toLowerCase()==='g'&&!e.ctrlKey&&!e.metaKey)setTool('translate');if(e.key.toLowerCase()==='r'&&!e.ctrlKey&&!e.metaKey)setTool('rotate');if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey)setTool('scale');});
 if(window.innerWidth<=850){$('menuBtn').classList.remove('hidden');$('closeInspector').classList.remove('hidden')}
 window.addEventListener('resize',()=>{$('menuBtn').classList.toggle('hidden',window.innerWidth>850);$('closeInspector').classList.toggle('hidden',window.innerWidth>850);if(window.innerWidth>850)mobileClose()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&autosaveTimer)saveProject()});
