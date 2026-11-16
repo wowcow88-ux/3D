@@ -1,40 +1,38 @@
-# 3D Studio C5P — 第一版 v0.1.0
+# 3D Studio v0.1.1 — 主畫面 App 圖示版本
 
-免費、手機／Android 平板／Mac／Windows 皆可使用的 3D 模型編輯 Web App。針對 Flashforge Creator 5 Pro 的 256 × 256 × 256 mm 平台設計。
+本版本保留上一版 3D 建模功能，新增黑灰白 Logo 及 iPhone / Android 桌面 App 圖示設定。沒有增加一鍵列印或付費服務。
 
-## 使用方式
+## 用 GitHub + Vercel 部署
 
-1. 將 `index.html` 與 `vercel.json` 上傳到 **GitHub 儲存庫根目錄**。
-2. Vercel → Add New → Project → Import 此 GitHub Repo。
-3. Framework Preset 選 **Other**，Root Directory 設 `./`，Build Command 留空，Output Directory 使用 `.`。
-4. 點 Deploy。之後每次更新 GitHub 的 `main` 分支，Vercel 便會重新部署。
-5. 進入網頁後直接操作。匯出 STL，接著使用 **Flash Studio Desktop** 選擇 Creator 5 Pro 對應噴嘴與線材設定進行切片、傳輸及列印。
+請**解壓縮後**，把這個資料夾裡全部檔案放到你的 GitHub 儲存庫**根目錄**（跟 index.html 同一層），若已有 index.html、vercel.json，選擇覆蓋舊版。不要只上傳 ZIP，也不要放進額外子資料夾。
 
-> 如果儲存庫只有 `index.html` 一個檔案，也可以部署（Vercel 請選 Other 並設定 root）。`vercel.json` 只是協助固定部署設定。
+index.html
+manifest.webmanifest
+icon-180.png
+icon-192.png
+icon-512.png
+icon-1024.png
+icon-maskable-512.png
+favicon-32.png
+vercel.json
+README.md
 
-## 已有功能
-- Apple 風格的簡約介面、膠囊按鈕，支援觸控、滑鼠與手寫筆。
-- 匯入 STL、OBJ、GLB、SVG（SVG 必須包含封閉向量路徑）。
-- 新增圓角底座、方塊、球、圓柱、圓錐、圓環。
-- 畫出平面閉合輪廓並拉伸成 3D。
-- 360 度檢視、頂視/正視/側視、物件點選、拖曳移動／旋轉／縮放、輸入毫米尺寸。
-- 物件複製、刪除、變更顏色、顯示與隱藏、回到平台、復原／重做。
-- 匯出 STL 供切片；匯出 GLB 保存幾何、顏色與場景組成；下載 PNG 預覽。
-- 使用 IndexedDB 自動儲存於目前裝置，**不會自動跨裝置同步**。
+Vercel 若已連線 GitHub main，推送後就會自動部署，無須改設定。這是 PWA 外觀設定，不含 service worker，因為 Three.js 等依賴網路 CDN，暫不保證離線可用。
 
-## 尚未實作
-- 任意頂點雕塑、完整網格修補、布林挖孔、真正的 AI 圖片轉 3D、3MF 專案檔匯入、實體模擬和自動切片。
-- C5P 列印機器連線與一鍵列印（依需求特意延後）。
+## iPhone
 
-## 重要提醒
-- 第一次開啟需要網路連線載入 Three.js（採 `three@0.173.0` 的 jsDelivr CDN）。
-- STL 不包含顏色、材料和切片參數。請用 Flash Studio 設定印表機、噴頭、層高、材料及支撐。
-- GLB 依據匯入來源與模型細節可能非常大，建議定期備份到檔案，不要只依賴瀏覽器自動儲存。
-- 不同來源的 GLB/OBJ 可能使用 Y-up 坐標，匯入後如果角度不符，請使用旋轉欄位調整。
-- 60 MB 的單檔上傳限制是為了減少手機／平板卡頓，大型網格可能仍超出裝置效能。
+1. 使用 Safari 進入部署好的網址。
+2. 點分享 → 加入主畫面。
+3. 開啟「打開為網頁 App」(若有選項)。
+4. 設定名稱「3D Studio」→ 加入。
+5. 若先前已加到主畫面但仍顯示舊圖示，請移除舊主畫面圖示後重新加入（不會刪除 Vercel 網站）。
 
-## 技術
-純靜態 HTML + CSS + JavaScript ES Modules，Three.js 與官方 Addons。無後端、不需要 Supabase、API 金鑰或付費 AI。
+## Android
 
-## 版本
-v0.1.0 — 第一版可操作 MVP。
+Chrome 打開網站 → ⋮ → 加到主畫面 / 安裝應用程式。
+
+## 注意
+
+* 目前建模工作仍預設 Flashforge C5P 平台尺寸；新的 Logo 不限定品牌，但多機型切換將是後續功能。
+* 專案本機儲存跟瀏覽器／網域有關；更換網域或移除原網站前，先從程式匯出 GLB 備份。
+* 這是可以加入桌面的網頁 App，不是原生 iOS / Android App，是否可離線使用需另做開發。
