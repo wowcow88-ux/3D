@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png?v=020" />
 <link rel="manifest" href="./manifest.webmanifest?v=020" />
 <meta name="description" content="3D Studio — 免費、平板友善、優雅簡約的 3D 建模與編輯工作室。" />
-<title>3D Studio · 精準量測與智能排列工作室</title>
+<title>3D Studio · 文字客製與 STL 匯入修復</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <style>
 :root { --ink:#1d2433;--muted:#8a90a0;--line:#e8ebf1;--surface:#fff;--canvas:#f4f6fa;--blue:#2367ed;--blue-dark:#0f4fd7;--soft-blue:#eaf1ff;--radius:22px; --shadow:0 10px 35px rgba(45,54,75,.055);--font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif; }
@@ -91,6 +91,12 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #measureBtn.active{background:#34383f;color:white}
 @media(max-width:850px){.measure-hud{top:116px;left:12px;right:auto;width:min(330px,calc(100% - 24px))}.tool-dock .tool{width:35px;height:35px}}
 @media(max-width:490px){.measure-hud{top:107px;padding:12px}.measure-distance{font-size:18px}.arrange-dialog{padding:18px}.arrange-settings{grid-template-columns:100px minmax(0,1fr)}.tool-dock .tool{width:32px;height:34px}.tool-dock{max-width:calc(100% - 90px)}}
+/* v0.5.0: Native picker remains a real visible input within its pill target (Safari/PWA safe). */
+.import-trigger{position:relative;cursor:pointer;user-select:none}
+.import-trigger input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0;z-index:1}
+.import-note{margin:12px 11px;font-size:10px;line-height:1.7;color:#8a919d}
+.text-dialog{max-width:540px}
+@media(max-width:850px){.import-note{margin:10px 12px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.173.0/examples/jsm/","three-bvh-csg":"https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.17/build/index.module.js","three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.8.3/build/index.module.js"}}</script>
 </head>
@@ -139,7 +145,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   <div class="brand"><span class="brand-logo"><img src="./icon-192.png" alt="" width="39" height="39" decoding="async" /></span><div><div class="brand-name">3D Studio</div><div class="brand-sub">讓每個創意，都能成為作品。</div></div></div>
   <div class="top-status"><span class="status-dot"></span><span id="saveStatus">本機專案 · 準備就緒</span></div>
   <div class="top-actions">
-    <button id="importBtn" class="pill light"><svg class="i"><use href="#ic-upload"/></svg><span>匯入模型</span></button>
+    <label id="importBtn" class="pill light import-trigger" tabindex="0" role="button" aria-label="匯入模型"><svg class="i"><use href="#ic-upload"/></svg><span>匯入模型</span><input id="fileInput" type="file" multiple aria-label="選擇 STL、OBJ、GLB、3MF 或 SVG 檔案" /></label>
     <button id="sketchBtn" class="pill light wide"><svg class="i"><use href="#ic-pen"/></svg><span>畫圖建模</span></button>
     <button id="addBtn" class="pill primary"><svg class="i"><use href="#ic-plus"/></svg><span>新增模型</span></button>
     <button id="exportBtn" class="pill light"><svg class="i"><use href="#ic-download"/></svg><span>匯出 STL</span></button>
@@ -147,11 +153,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   </div>
   <div id="moreMenu" class="dropdown hidden" role="menu">
     <button data-action="export-glb"><svg class="i"><use href="#ic-save"/></svg>備份完整專案 GLB</button>
-    <button data-action="import"><svg class="i"><use href="#ic-upload"/></svg>匯入 STL / OBJ / GLB / 3MF / SVG</button>
+    <button data-action="import"><svg class="i"><use href="#ic-upload"/></svg>從檔案 App 選擇模型</button>
     <button data-action="printer"><svg class="i"><use href="#ic-sliders"/></svg>選擇印表機與列印設定</button>
     <button data-action="arrange"><svg class="i"><use href="#ic-align"/></svg>對齊與自動排列模型</button>
     <button data-action="measure"><svg class="i"><use href="#ic-ruler"/></svg>量測表面兩點距離</button>
-    <button data-action="export-selected"><svg class="i"><use href="#ic-download"/></svg>僅匯出選取模型 STL</button><button data-action="advanced"><svg class="i"><use href="#ic-cube"/></svg>進階編輯 · 合併／挖孔／切割</button><button data-action="settings-json"><svg class="i"><use href="#ic-download"/></svg>下載切片設定備忘 JSON</button><button data-action="screenshot"><svg class="i"><use href="#ic-camera"/></svg>下載預覽圖片</button>
+    <button data-action="export-selected"><svg class="i"><use href="#ic-download"/></svg>僅匯出選取模型 STL</button><button data-action="text"><svg class="i"><use href="#ic-pen"/></svg>文字浮雕／凹刻</button><button data-action="mirror"><svg class="i"><use href="#ic-scale"/></svg>鏡像選取模型</button><button data-action="advanced"><svg class="i"><use href="#ic-cube"/></svg>進階編輯 · 合併／挖孔／切割</button><button data-action="settings-json"><svg class="i"><use href="#ic-download"/></svg>下載切片設定備忘 JSON</button><button data-action="screenshot"><svg class="i"><use href="#ic-camera"/></svg>下載預覽圖片</button>
     <button data-action="save"><svg class="i"><use href="#ic-save"/></svg>立即儲存本機</button>
     <div class="separator"></div>
     <button data-action="undo"><svg class="i"><use href="#ic-undo"/></svg>復原上一步</button>
@@ -166,17 +172,17 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div class="side-caption">工作室</div>
     <button class="side-button selected" data-side="workspace"><svg class="i"><use href="#ic-box"/></svg> 3D 編輯畫布</button>
     <button class="side-button" data-side="sketch"><svg class="i"><use href="#ic-pen"/></svg> 2D 繪圖轉立體</button>
-    <button class="side-button" data-side="import"><svg class="i"><use href="#ic-upload"/></svg> 匯入設計作品</button>
+    <button class="side-button" data-side="import"><svg class="i"><use href="#ic-upload"/></svg> 匯入設計作品</button><button class="side-button" data-side="text"><svg class="i"><use href="#ic-pen"/></svg> 客製文字浮雕</button>
     <button class="side-button" data-side="arrange"><svg class="i"><use href="#ic-align"/></svg> 對齊與排列模型</button>
     <button class="side-button" data-side="measure"><svg class="i"><use href="#ic-ruler"/></svg> 兩點距離測量</button><button class="side-button" data-side="advanced"><svg class="i"><use href="#ic-cube"/></svg> 進階模型編輯</button><button class="side-button" data-side="printer"><svg class="i"><use href="#ic-sliders"/></svg> 印表機與列印設定</button>
-    <div class="side-caption" style="margin-top:27px">我的模型 <span id="modelCount" style="font-weight:500">(0)</span></div>
+    <div class="import-note">iPhone／Android：點「匯入模型」→「選擇檔案」→「瀏覽」，可選 STL。若檔案灰色，先複製到裝置內的「下載項目」。</div><div class="side-caption" style="margin-top:27px">我的模型 <span id="modelCount" style="font-weight:500">(0)</span></div>
     <div id="layerList" class="layers"><div class="layer-empty">尚未加入模型</div></div>
     <div class="side-box"><div class="soft-tag"><svg class="i small"><use href="#ic-check"/></svg> 免費 · 本機優先</div><p>模型自動儲存在此裝置瀏覽器。換手機或平板時，請先匯出 GLB 備份，再到另一台裝置匯入。GLB 會附帶機型資訊；也可另外下載 JSON 設定備忘。</p><button id="backupBtn" class="pill sm light" style="width:100%"><svg class="i small"><use href="#ic-download"/></svg> 備份設計專案</button></div>
-    <div class="side-footer">3D Studio · v0.4.0<br>支援多品牌列印平台與模型匯出<br>開源 Three.js · 無會員與雲端上傳</div>
+    <div class="side-footer">3D Studio · v0.5.0<br>支援多品牌列印平台與模型匯出<br>開源 Three.js · 無會員與雲端上傳</div>
   </nav>
   <main class="workspace" id="workspace">
     <div id="stage" aria-label="可操作的三維建模畫布"></div>
-    <div class="stage-head"><div><h1>創作空間</h1><p>點選模型、自由旋轉，讓想法立體成形。</p><button id="printerBtn" class="printer-shortcut" title="選擇 3D 印表機"><svg class="i small"><use href="#ic-sliders"/></svg><span id="printerBtnText">Creator 5 Pro</span><svg class="i small"><use href="#ic-chevron"/></svg></button></div><span class="version-pill">BETA 04</span></div>
+    <div class="stage-head"><div><h1>創作空間</h1><p>點選模型、自由旋轉，讓想法立體成形。</p><button id="printerBtn" class="printer-shortcut" title="選擇 3D 印表機"><svg class="i small"><use href="#ic-sliders"/></svg><span id="printerBtnText">Creator 5 Pro</span><svg class="i small"><use href="#ic-chevron"/></svg></button></div><span class="version-pill">BETA 05</span></div>
     <div class="view-actions"><button data-view="iso">3D</button><button data-view="top">頂視</button><button class="small-screen-hide" data-view="front">正視</button><button class="small-screen-hide" data-view="right">側視</button><button id="gridBtn" title="顯示／隱藏網格"><svg class="i small"><use href="#ic-grid"/></svg></button></div>
     <div id="emptyStage" class="empty-stage"><div class="empty-icon">◇</div><h3>從一個立體形狀開始</h3><p>新增模型、匯入 STL，或用觸控筆畫一個輪廓。</p></div>
     <div id="measureHud" class="measure-hud hidden" role="status" aria-live="polite">
@@ -200,7 +206,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <div class="section"><div class="section-head"><h3>移動位置</h3><small>mm</small></div><div class="triple-grid"><div class="field"><label class="axis-x">X</label><input id="posX" type="number" step="1"/></div><div class="field"><label class="axis-y">Y</label><input id="posY" type="number" step="1"/></div><div class="field"><label class="axis-z">Z</label><input id="posZ" type="number" step="1"/></div></div><p class="dimension-note">座標是模型的編輯原點；平台上表面高度為 Z = 0。</p></div>
       <div class="section"><div class="section-head"><h3>旋轉角度</h3><small>度（°）</small></div><div class="triple-grid"><div class="field"><label class="axis-x">X</label><input id="rotX" type="number" step="1"/></div><div class="field"><label class="axis-y">Y</label><input id="rotY" type="number" step="1"/></div><div class="field"><label class="axis-z">Z</label><input id="rotZ" type="number" step="1"/></div></div></div>
       <div class="section"><div class="section-head"><h3>外觀顏色</h3><small>僅供編輯預覽</small></div><div class="color-row" id="colors"><button class="color-chip" data-color="#d9e6ff" style="background:#d9e6ff" title="珍珠藍"></button><button class="color-chip" data-color="#fafafa" style="background:#fafafa" title="珍珠白"></button><button class="color-chip" data-color="#c4c7cd" style="background:#c4c7cd" title="金屬灰"></button><button class="color-chip" data-color="#f3b8a8" style="background:#f3b8a8" title="玫瑰粉"></button><button class="color-chip" data-color="#b6d6c4" style="background:#b6d6c4" title="鼠尾草綠"></button><button class="color-chip" data-color="#303d51" style="background:#303d51" title="石墨黑"></button><input id="customColor" type="color" title="自訂顏色" value="#d9e6ff" style="width:30px;height:30px;border:0;background:transparent;padding:0;cursor:pointer"/></div><p class="dimension-note">STL 不保存顏色；如需多色列印，請在 Flash Studio 指定不同零件或噴頭。</p></div>
-      <div class="section" style="border:0"><div class="mini-actions"><button id="duplicateBtn" class="pill sm light"><svg class="i small"><use href="#ic-copy"/></svg> 複製</button><button id="placeBtn" class="pill sm light"><svg class="i small"><use href="#ic-grid"/></svg> 放到平台</button><button id="centerBtn" class="pill sm light"><svg class="i small"><use href="#ic-move"/></svg> 置中</button><button id="fitBtn" class="pill sm light"><svg class="i small"><use href="#ic-scale"/></svg> 適配平台</button><button id="arrangeBtn" class="pill sm light"><svg class="i small"><use href="#ic-align"/></svg> 對齊／排列</button><button id="exportSelectedBtn" class="pill sm light"><svg class="i small"><use href="#ic-download"/></svg> 匯出此零件</button><button id="resetRotationBtn" class="pill sm light"><svg class="i small"><use href="#ic-rotate"/></svg> 歸零角度</button><button id="deleteBtn" class="pill sm danger"><svg class="i small"><use href="#ic-trash"/></svg> 刪除</button></div></div>
+      <div class="section" style="border:0"><div class="mini-actions"><button id="duplicateBtn" class="pill sm light"><svg class="i small"><use href="#ic-copy"/></svg> 複製</button><button id="placeBtn" class="pill sm light"><svg class="i small"><use href="#ic-grid"/></svg> 放到平台</button><button id="centerBtn" class="pill sm light"><svg class="i small"><use href="#ic-move"/></svg> 置中</button><button id="fitBtn" class="pill sm light"><svg class="i small"><use href="#ic-scale"/></svg> 適配平台</button><button id="arrangeBtn" class="pill sm light"><svg class="i small"><use href="#ic-align"/></svg> 對齊／排列</button><button id="exportSelectedBtn" class="pill sm light"><svg class="i small"><use href="#ic-download"/></svg> 匯出此零件</button><button id="mirrorBtn" class="pill sm light"><svg class="i small"><use href="#ic-scale"/></svg> 鏡像模型</button><button id="textBtn" class="pill sm light"><svg class="i small"><use href="#ic-pen"/></svg> 文字浮雕／凹刻</button><button id="resetRotationBtn" class="pill sm light"><svg class="i small"><use href="#ic-rotate"/></svg> 歸零角度</button><button id="deleteBtn" class="pill sm danger"><svg class="i small"><use href="#ic-trash"/></svg> 刪除</button></div></div>
     </div>
     <div class="section" style="padding-top:15px"><button id="advancedBtn" class="pill light advanced-entry"><span class="left"><svg class="i small"><use href="#ic-cube"/></svg>進階編輯</span><svg class="i small"><use href="#ic-chevron"/></svg></button><p class="advanced-muted">合併、挖孔、切割與網格檢查；不常用的工具集中在此。</p></div>
     <div class="section" style="margin-top:5px;border-top:1px solid var(--line);border-bottom:0"><div class="section-head"><h3>快速加入形狀</h3><small>基本建模</small></div><div class="shape-picker"><button class="shape-item" data-shape="rounded"><svg class="i large"><use href="#ic-cube"/></svg>圓角底座</button><button class="shape-item" data-shape="box"><svg class="i large"><use href="#ic-box"/></svg>方塊</button><button class="shape-item" data-shape="sphere"><svg class="i large"><use href="#ic-circle"/></svg>球體</button><button class="shape-item" data-shape="cylinder"><svg class="i large"><use href="#ic-cylinder"/></svg>圓柱</button><button class="shape-item" data-shape="cone"><svg class="i large"><use href="#ic-cone"/></svg>圓錐</button><button class="shape-item" data-shape="ring"><svg class="i large"><use href="#ic-ring"/></svg>圓環</button></div></div>
@@ -208,7 +214,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   </aside>
 </div>
 </div>
-<input id="fileInput" type="file" class="hidden" accept=".stl,.obj,.glb,.svg,.3mf" multiple />
+
 <div class="overlay hidden" id="sketchModal" role="dialog" aria-modal="true" aria-label="手繪立體造型"><div class="dialog"><div class="dialog-head"><div><div class="dialog-title">手繪變立體 <span style="font-size:12px;color:#8ca1c1;font-weight:500">Sketch → 3D</span></div><div class="dialog-sub">用觸控筆或滑鼠畫出一個封閉的外輪廓，系統會自動生成有厚度的 3D 模型。</div></div><button class="icon-btn" id="sketchClose"><svg class="i"><use href="#ic-x"/></svg></button></div><div class="sketch-wrap"><canvas id="sketchCanvas" width="700" height="380" aria-label="自由繪圖畫布"></canvas></div><div class="dialog-footer"><div class="field" style="width:145px"><label>拉伸厚度（mm）</label><input id="sketchDepth" type="number" value="8" min="1" max="200" step="1"/></div><div style="display:flex;gap:8px;align-items:center"><button id="sketchClear" class="pill light"><svg class="i small"><use href="#ic-trash"/></svg>清除</button><button id="sketchCreate" class="pill primary"><svg class="i small"><use href="#ic-check"/></svg>生成 3D 模型</button></div></div><p class="notice">適合名字牌、裝飾底座、外輪廓拉伸。不是自動將平面繪畫轉成完整雕塑；請避免線條自我交叉。</p></div></div>
 <div class="overlay hidden" id="shapeModal" role="dialog" aria-modal="true" aria-label="新增立體模型"><div class="dialog" style="max-width:490px"><div class="dialog-head"><div><div class="dialog-title">新增 3D 形狀</div><div class="dialog-sub">選一個基本形狀，開始自由組合自己的設計。</div></div><button class="icon-btn" id="shapeClose"><svg class="i"><use href="#ic-x"/></svg></button></div><div class="shape-picker" style="grid-template-columns:repeat(3,1fr)"><button class="shape-item" data-shape="rounded"><svg class="i large"><use href="#ic-cube"/></svg>圓角底座</button><button class="shape-item" data-shape="box"><svg class="i large"><use href="#ic-box"/></svg>方塊</button><button class="shape-item" data-shape="sphere"><svg class="i large"><use href="#ic-circle"/></svg>球體</button><button class="shape-item" data-shape="cylinder"><svg class="i large"><use href="#ic-cylinder"/></svg>圓柱</button><button class="shape-item" data-shape="cone"><svg class="i large"><use href="#ic-cone"/></svg>圓錐</button><button class="shape-item" data-shape="ring"><svg class="i large"><use href="#ic-ring"/></svg>圓環</button></div></div></div>
 <div class="overlay hidden" id="advancedModal" role="dialog" aria-modal="true" aria-label="進階模型編輯">
@@ -247,6 +253,28 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <p class="advanced-help">簡易整理無法自動補上大破洞或保證水密；複雜模型仍建議用 Blender／MeshLab 修補。</p>
     </div>
     <div class="advanced-footer-note">此版本使用免費開源幾何函式庫。首次運算時需連網載入，手機處理高面數網格可能較慢。切片及實體列印仍在品牌切片軟體完成。</div>
+  </div>
+</div>
+<div class="overlay hidden" id="textModal" role="dialog" aria-modal="true" aria-label="文字浮雕與凹刻">
+  <div class="dialog text-dialog">
+    <div class="dialog-head"><div><div class="dialog-title">文字設計 <span class="dialog-mini-label">Text → 3D</span></div><div class="dialog-sub">支援中文、英文與數字。使用裝置字型產生真正的立體幾何，不只是貼圖。</div></div><button id="textClose" class="icon-btn" aria-label="關閉文字工具"><svg class="i"><use href="#ic-x"/></svg></button></div>
+    <div class="printer-field"><label for="textValue">要加入的文字</label><input id="textValue" value="啾豆" maxlength="12" placeholder="例如 NANI、啾豆"/></div>
+    <div class="printer-settings-grid two">
+      <div class="printer-field"><label for="textMode">製作方式</label><select id="textMode"><option value="raised">浮雕文字（獨立可編輯模型）</option><option value="engrave">凹刻到目前選取的模型</option></select></div>
+      <div class="printer-field"><label for="textHeight">文字實際高度（mm）</label><input id="textHeight" type="number" value="16" min="3" max="80" step="1" /></div>
+      <div class="printer-field"><label for="textDepth">凸起／刻入深度（mm）</label><input id="textDepth" type="number" value="1.2" min="0.4" max="8" step="0.2" /></div>
+      <div class="printer-field"><label for="textWeight">字型粗細</label><select id="textWeight"><option value="700">粗體（適合列印）</option><option value="500">一般字重</option></select></div>
+    </div>
+    <div class="printer-note" style="margin-top:14px">以選取模型外框上表面置中擺放。浮雕文字會成為獨立零件，和底座重疊約 0.25 mm，可再用「合併」工具整合；凹刻會修改原模型，適合封閉的平頂底座。複雜曲面或破損 STL 可能失敗。</div>
+    <button id="textApply" class="pill primary advanced-action">建立立體文字</button>
+  </div>
+</div>
+<div class="overlay hidden" id="mirrorModal" role="dialog" aria-modal="true" aria-label="鏡像模型">
+  <div class="dialog" style="max-width:475px">
+    <div class="dialog-head"><div><div class="dialog-title">鏡像模型</div><div class="dialog-sub">以模型中心線翻轉幾何，適用左右對稱零件和反向配件。</div></div><button id="mirrorClose" class="icon-btn" aria-label="關閉鏡像工具"><svg class="i"><use href="#ic-x"/></svg></button></div>
+    <div class="printer-field"><label for="mirrorAxis">選擇鏡像方向</label><select id="mirrorAxis"><option value="x">X 軸 · 左右鏡像</option><option value="y">Y 軸 · 前後鏡像</option><option value="z">Z 軸 · 上下鏡像</option></select></div>
+    <div class="printer-note" style="margin-top:12px">保留模型實際尺寸，重建正確的三角形朝向。建議鏡像後檢查懸空位置，再按「放到平台」。</div>
+    <button id="mirrorApply" class="pill primary advanced-action">套用鏡像</button>
   </div>
 </div>
 <div class="overlay hidden" id="arrangeModal" role="dialog" aria-modal="true" aria-label="對齊與排列模型">
@@ -520,7 +548,7 @@ function removeSelected(){const m=activeModel();if(!m)return;pushUndo();root.rem
 function duplicateSelected(){const m=activeModel();if(!m)return;pushUndo();const copy=m.clone(true);copy.name=(m.name||'模型')+' 副本';copy.userData={...m.userData,editorId:'m'+Math.random().toString(36).slice(2,10)};copy.position.x+=15;root.add(copy);select(copy);changed();notify('已複製模型')}
 function applyInspector(id,value){const m=activeModel();if(!m)return;const n=Number(value);if(!Number.isFinite(n))return;if(id.startsWith('size')){if(n<=.01||n>9999)return notify('尺寸需介於 0.01～9999 mm');const axis={sizeX:'x',sizeY:'y',sizeZ:'z'}[id];const cur=dims(m)[axis];if(cur<.000001)return notify('此模型在該方向沒有可縮放的厚度');pushUndo();m.scale[axis]*=n/cur;}else if(id.startsWith('pos')){pushUndo();m.position[id.slice(-1).toLowerCase()]=n;}else if(id.startsWith('rot')){pushUndo();m.rotation[id.slice(-1).toLowerCase()]=THREE.MathUtils.degToRad(n);}else{return;}changed();}
 function alignModel(obj,orientYup=false){const wrapper=new THREE.Group();wrapper.name=obj.name||'匯入模型';idOf(wrapper);obj.name=obj.name||'模型內容';if(orientYup)obj.rotation.x+=Math.PI/2;wrapper.add(obj);obj.updateWorldMatrix(true,true);const b=new THREE.Box3().setFromObject(obj);if(!b.isEmpty()){const c=b.getCenter(new THREE.Vector3());obj.position.x-=c.x;obj.position.y-=c.y;obj.position.z-=b.min.z;}wrapper.traverse(m=>{if(m.isMesh){m.castShadow=true;m.receiveShadow=true;if(!m.material)m.material=new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.52,side:THREE.DoubleSide})}});return wrapper;}
-async function importFiles(files){if(!files.length)return;setBusy(true,'正在載入 3D 模型…');let ok=0,fail=[];try{for(const file of files){try{if(file.size>MAX_FILE_MB*1024*1024)throw new Error(`單檔限制 ${MAX_FILE_MB} MB`);const ext=file.name.split('.').pop().toLowerCase();let m=null;const data=await file.arrayBuffer();if(ext==='stl'){const geo=stlLoader.parse(data);geo.computeVertexNormals();m=alignModel(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.48,side:THREE.DoubleSide})));}else if(ext==='obj'){m=alignModel(objLoader.parse(new TextDecoder().decode(data)));}else if(ext==='3mf'){m=alignModel(threeMFLoader.parse(data));}else if(ext==='glb'){const result=await gltfLoader.parseAsync(data,'');let project=result.scene.name==='3D Studio 工作專案'?result.scene:result.scene.children.find(c=>c.name==='3D Studio 工作專案');if(project){if(project.userData?.printerOptions)profileSet(project.userData.printerOptions);const models=[...project.children];if(!models.length)throw new Error('備份專案中沒有模型');for(const sub of models){pushUndo();project.remove(sub);idOf(sub);root.add(sub);select(sub);ok++;}continue;}m=alignModel(result.scene,true);}else if(ext==='svg'){const svg=svgLoader.parse(new TextDecoder().decode(data));let group=new THREE.Group();for(const path of svg.paths){for(const shape of SVGLoader.createShapes(path)){const geo=new THREE.ExtrudeGeometry(shape,{depth:8,steps:1,bevelEnabled:false,curveSegments:12});geo.scale(.35,-.35,1);group.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.48,side:THREE.DoubleSide})));}}if(!group.children.length)throw new Error('SVG 沒有可轉成立體的封閉形狀');m=alignModel(group);}else throw new Error('目前支援 STL、OBJ、GLB、3MF 與 SVG');m.name=file.name.replace(/\.[^/.]+$/,'');pushUndo();root.add(m);select(m);ok++;}catch(e){console.error('import',file.name,e);fail.push(`${file.name}：${e.message||e}`)}}if(ok)changed();if(fail.length)notify(`匯入 ${ok} 個；${fail.slice(0,2).join('；')}`);else notify(`成功匯入 ${ok} 個模型`)}finally{setBusy(false);$('fileInput').value='';}}
+async function importFiles(files){if(!files.length)return;setBusy(true,'正在載入 3D 模型…');let ok=0,fail=[];try{for(const file of files){try{if(file.size>MAX_FILE_MB*1024*1024)throw new Error(`單檔限制 ${MAX_FILE_MB} MB`);const ext=file.name.split('.').pop().toLowerCase();let m=null;const data=await file.arrayBuffer();if(ext==='stl'){if(data.byteLength<24)throw new Error('檔案太小或不是有效 STL');const geo=stlLoader.parse(data);if(!geo.getAttribute('position')?.count)throw new Error('STL 沒有可讀取的三角形');geo.computeVertexNormals();m=alignModel(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.48,side:THREE.DoubleSide})));}else if(ext==='obj'){m=alignModel(objLoader.parse(new TextDecoder().decode(data)));}else if(ext==='3mf'){m=alignModel(threeMFLoader.parse(data));}else if(ext==='glb'){const result=await gltfLoader.parseAsync(data,'');let project=result.scene.name==='3D Studio 工作專案'?result.scene:result.scene.children.find(c=>c.name==='3D Studio 工作專案');if(project){if(project.userData?.printerOptions)profileSet(project.userData.printerOptions);const models=[...project.children];if(!models.length)throw new Error('備份專案中沒有模型');for(const sub of models){pushUndo();project.remove(sub);idOf(sub);root.add(sub);select(sub);ok++;}continue;}m=alignModel(result.scene,true);}else if(ext==='svg'){const svg=svgLoader.parse(new TextDecoder().decode(data));let group=new THREE.Group();for(const path of svg.paths){for(const shape of SVGLoader.createShapes(path)){const geo=new THREE.ExtrudeGeometry(shape,{depth:8,steps:1,bevelEnabled:false,curveSegments:12});geo.scale(.35,-.35,1);group.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.48,side:THREE.DoubleSide})));}}if(!group.children.length)throw new Error('SVG 沒有可轉成立體的封閉形狀');m=alignModel(group);}else throw new Error('目前支援 STL、OBJ、GLB、3MF 與 SVG');m.name=file.name.replace(/\.[^/.]+$/,'');pushUndo();root.add(m);select(m);ok++;}catch(e){console.error('import',file.name,e);fail.push(`${file.name}：${e.message||e}`)}}if(ok)changed();if(fail.length){const msg=`匯入 ${ok} 個；${fail.slice(0,2).join('；')}`;notify(msg);if(!ok)alert('無法匯入模型：\n'+fail.join('\n')+'\n\n請確認檔案為有效 STL／OBJ／GLB／3MF／SVG，並非 ZIP 或切片 G-code。')}else notify(`成功匯入 ${ok} 個模型`)}finally{setBusy(false);$('fileInput').value='';}}
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 function exportSTL(selectionOnly=false){
  const models=selectionOnly?[activeModel()].filter(Boolean):root.children.filter(m=>m.visible);
@@ -766,9 +794,128 @@ async function runRepair(){
  });
 }
 
+// v0.5 — real editable text solids + mirror, designed for touchscreen browsers.
+function openText(){mobileClose();hideMenu();$('textModal').classList.remove('hidden')}
+function openMirror(){if(!activeModel())return notify('請先點選要鏡像的模型');mobileClose();hideMenu();$('mirrorModal').classList.remove('hidden')}
+function makeTextSolid(text,height,depth,weight){
+ // Rasterize the user's installed system glyphs, then trace pixel contours into real extruded geometry.
+ // Unlike a floating texture, this can be exported as STL and physically printed.
+ const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
+ const fontSize=78;ctx.font=`${weight} ${fontSize}px -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans CJK TC","Microsoft JhengHei",sans-serif`;
+ const textWidth=Math.ceil(ctx.measureText(text).width);if(textWidth>1080)throw new Error('文字過長，請分開建立兩個文字模型（最多約 12 個字）');
+ canvas.width=textWidth+26;canvas.height=118;
+ ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#000';ctx.font=`${weight} ${fontSize}px -apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans CJK TC","Microsoft JhengHei",sans-serif`;
+ ctx.textBaseline='alphabetic';ctx.fillText(text,13,89);
+ const w=canvas.width,h=canvas.height,img=ctx.getImageData(0,0,w,h).data,mask=new Uint8Array(w*h);
+ let minX=w,maxX=0,minY=h,maxY=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(img[(y*w+x)*4+3]>=112){mask[y*w+x]=1;minX=Math.min(minX,x);maxX=Math.max(maxX,x+1);minY=Math.min(minY,y);maxY=Math.max(maxY,y+1)}}
+ if(minX>=maxX||minY>=maxY)throw new Error('文字沒有可製作的輪廓');
+ const scale=height/(maxY-minY),widthMm=(maxX-minX)*scale;
+ if(widthMm>Math.max(printer.x,printer.y)*2)throw new Error('文字太寬，請降低高度或分段建立');
+ const edges=new Map();
+ const yes=(x,y)=> x>=0&&y>=0&&x<w&&y<h&&mask[y*w+x]===1;
+ const key=(x,y)=>x+','+y;
+ const edge=(x1,y1,x2,y2)=>{const k=key(x1,y1);if(!edges.has(k))edges.set(k,[]);edges.get(k).push({x:x2,y:y2})};
+ // Filled pixels traverse with foreground on the left, so outer loops and holes have opposite winding.
+ for(let y=minY;y<maxY;y++)for(let x=minX;x<maxX;x++)if(yes(x,y)){
+  if(!yes(x,y+1))edge(x,y+1,x+1,y+1); // bottom edge
+  if(!yes(x+1,y))edge(x+1,y+1,x+1,y); // right edge
+  if(!yes(x,y-1))edge(x+1,y,x,y);     // top edge
+  if(!yes(x-1,y))edge(x,y,x,y+1);     // left edge
+ }
+ const loops=[],maxEdges=(w*h*4)+10;let iter=0;
+ while(edges.size){
+  const [start,arr]=edges.entries().next().value;
+  const from=start.split(',').map(Number);let pos={x:from[0],y:from[1]};const poly=[{...pos}];let closed=false;
+  for(let n=0;n<maxEdges;n++){
+   if(++iter>maxEdges*2)break;
+   const k=key(pos.x,pos.y),list=edges.get(k);if(!list?.length)break;
+   const next=list.pop();if(!list.length)edges.delete(k);
+   if(next.x===from[0]&&next.y===from[1]){closed=true;break}
+   poly.push(next);pos=next;
+  }
+  if(!closed||poly.length<4)continue;
+  let area=0;for(let i=0;i<poly.length;i++){const p=poly[i],q=poly[(i+1)%poly.length];area+=p.x*(-q.y)-q.x*(-p.y)}
+  if(Math.abs(area)<3)continue;
+  const simplified=[];for(let i=0;i<poly.length;i++){
+   const prev=poly[(i+poly.length-1)%poly.length],p=poly[i],next=poly[(i+1)%poly.length];
+   if((p.x-prev.x)*(next.y-p.y)===(p.y-prev.y)*(next.x-p.x))continue;
+   simplified.push(new THREE.Vector2((p.x-minX)*scale-widthMm/2,(maxY-p.y)*scale-height/2));
+  }
+  if(simplified.length>=3)loops.push({points:simplified,area:area/2});
+ }
+ function contains(poly,p){let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+   const a=poly[i],b=poly[j];if((a.y>p.y)!==(b.y>p.y) && p.x < (b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
+ }return inside}
+ const outer=loops.filter(l=>l.area>0).map(l=>({loop:l,shape:new THREE.Shape(l.points)}));
+ for(const hole of loops.filter(l=>l.area<0)){
+  const target=outer.filter(o=>contains(o.loop.points,hole.points[0])).sort((a,b)=>a.loop.area-b.loop.area)[0];
+  if(target)target.shape.holes.push(new THREE.Path(hole.points));
+ }
+ if(!outer.length)throw new Error('找不到可用的文字幾何輪廓');
+ const geometry=new THREE.ExtrudeGeometry(outer.map(o=>o.shape),{depth,steps:1,bevelEnabled:false,curveSegments:1});
+ geometry.computeVertexNormals();
+ if((geometry.getAttribute('position')?.count||0)>210000)throw new Error('文字輪廓太複雜，請縮短文字或降低字重');
+ return geometry;
+}
+async function addTextToModel(){
+ const text=$('textValue').value.trim(),height=Number($('textHeight').value),depth=Number($('textDepth').value),weight=$('textWeight').value;
+ const mode=$('textMode').value,target=activeModel();
+ if(!text||text.length>12)return notify('請輸入 1～12 個字');
+ if(!Number.isFinite(height)||height<3||height>80||!Number.isFinite(depth)||depth<.4||depth>8)return notify('請檢查文字高度或深度設定');
+ if(mode==='engrave'&&!target)return notify('凹刻前請先選取一個平頂實體模型');
+ await runAdvanced('正在產生文字幾何…',async()=>{
+  // Wait for actual platform font availability before canvas rasterization.
+  await document.fonts?.ready;
+  const geo=makeTextSolid(text,height,depth+(mode==='engrave'?.7:0),weight);
+  const b=target?bbox(target):null,c=b?b.getCenter(new THREE.Vector3()):new THREE.Vector3(0,0,0);
+  const top=b?b.max.z:0;
+  const holder=new THREE.Group();holder.name='文字 · '+text;idOf(holder);
+  const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:MODEL_COLOR,roughness:.44,side:THREE.DoubleSide}));mesh.castShadow=true;mesh.receiveShadow=true;
+  holder.add(mesh);holder.position.set(c.x,c.y,mode==='engrave'?top-depth:top-.25);
+  if(mode==='engrave'){
+   triangleAllowance(target,holder);
+   const lib=await csgLibrary(),aGeo=csgGeometry(target),bGeo=csgGeometry(holder);
+   const result=await evaluateGeometry(aGeo,bGeo,'subtract',lib);
+   const output=objectFromBooleanGeometry(result,`凹刻「${text}」· ${target.name}`,modelColor(target));
+   commitAdvanced([output],[target],'文字凹刻');
+  }else{pushUndo();root.add(holder);select(holder);changed();$('textModal').classList.add('hidden');notify('文字已建立；與底座合併前可自由調整位置與大小');}
+ });
+}
+function flipTriangleWinding(geometry){
+ const count=geometry.getAttribute('position')?.count||0;
+ for(const attr of Object.values(geometry.attributes)){
+  for(let i=0;i+2<count;i+=3){const a=[],b=[];for(let c=0;c<attr.itemSize;c++){a.push(attr.getComponent(i+1,c));b.push(attr.getComponent(i+2,c));}for(let c=0;c<attr.itemSize;c++){attr.setComponent(i+1,c,b[c]);attr.setComponent(i+2,c,a[c]);}}
+  attr.needsUpdate=true;
+ }
+}
+function mirrorSelected(){
+ const original=activeModel();if(!original)return notify('請先選取模型');
+ const axis=$('mirrorAxis').value;if(!['x','y','z'].includes(axis))return;
+ try{
+  const center=bbox(original).getCenter(new THREE.Vector3()),holder=new THREE.Group();holder.name=`${original.name} · ${axis.toUpperCase()} 鏡像`;idOf(holder);
+  original.updateWorldMatrix(true,true);
+  for(const mesh of allMeshes(original)){
+   if(!mesh.geometry?.getAttribute('position'))continue;
+   const geo=mesh.geometry.index?mesh.geometry.toNonIndexed():mesh.geometry.clone();
+   geo.applyMatrix4(mesh.matrixWorld);
+   const pos=geo.getAttribute('position');for(let i=0;i<pos.count;i++)pos.setComponent(i,{x:0,y:1,z:2}[axis],2*center[axis]-pos.getComponent(i,{x:0,y:1,z:2}[axis]));
+   flipTriangleWinding(geo);geo.computeVertexNormals();
+   const mat=Array.isArray(mesh.material)?mesh.material.map(m=>m.clone()):mesh.material?.clone()||new THREE.MeshStandardMaterial({color:MODEL_COLOR});
+   const out=new THREE.Mesh(geo,mat);out.castShadow=true;out.receiveShadow=true;holder.add(out);
+  }
+  if(!holder.children.length)throw new Error('選取的模型沒有可鏡像的網格');
+  const shift=new THREE.Vector3(center.x,center.y,0);
+  for(const mesh of holder.children)mesh.geometry.translate(-shift.x,-shift.y,-shift.z);
+  holder.position.copy(shift);
+  pushUndo();root.remove(original);root.add(holder);select(holder);changed();$('mirrorModal').classList.add('hidden');notify('鏡像成功；可再將模型放到列印平台');
+ }catch(e){console.error('mirror',e);notify('鏡像失敗：'+(e.message||e));}
+}
+
 // UI events
 $('menuBtn').onclick=()=>mobileOpen('sidebar');$('inspectorBtn').onclick=()=>mobileOpen('inspector');$('closeInspector').onclick=mobileClose;$('mobileScrim').onclick=mobileClose;
-$('importBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=e=>importFiles([...e.target.files]);
+$('importBtn').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('fileInput').click()}};$('fileInput').onchange=e=>importFiles([...e.target.files]);
+$('textBtn').onclick=openText;$('mirrorBtn').onclick=openMirror;$('textClose').onclick=()=>{$('textModal').classList.add('hidden')};$('mirrorClose').onclick=()=>{$('mirrorModal').classList.add('hidden')};$('textApply').onclick=addTextToModel;$('mirrorApply').onclick=mirrorSelected;
 $('sketchBtn').onclick=$('mobileSketch').onclick=()=>{points=[];drawSketch();$('sketchModal').classList.remove('hidden');mobileClose()};
 $('sketchClose').onclick=()=>$('sketchModal').classList.add('hidden');$('sketchClear').onclick=()=>{points=[];drawSketch()};$('sketchCreate').onclick=makeSketch;
 $('addBtn').onclick=()=>$('shapeModal').classList.remove('hidden');$('shapeClose').onclick=()=>$('shapeModal').classList.add('hidden');document.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>addShape(b.dataset.shape));
@@ -783,12 +930,12 @@ $('modelName').addEventListener('change',e=>{if(!activeModel())return;pushUndo()
 for(const id of ['sizeX','sizeY','sizeZ','posX','posY','posZ','rotX','rotY','rotZ'])$(id).addEventListener('change',e=>applyInspector(id,e.target.value));
 $('colors').addEventListener('click',e=>{const btn=e.target.closest('[data-color]');if(btn)setColor(btn.dataset.color)});$('customColor').addEventListener('change',e=>setColor(e.target.value));
 $('moreBtn').onclick=e=>{e.stopPropagation();$('moreMenu').classList.toggle('hidden')};
-document.querySelectorAll('#moreMenu [data-action]').forEach(b=>b.onclick=async()=>{hideMenu();switch(b.dataset.action){case'import':$('fileInput').click();break;case'export-glb':await exportGLB();break;case'printer':openPrinter();break;case'advanced':showAdvanced();break;case'arrange':showArrange();break;case'measure':startMeasurement();break;case'export-selected':exportSTL(true);break;case'settings-json':exportPrinterSettings();break;case'screenshot':screenshot();break;case'save':await saveProject();notify('已送出本機儲存');break;case'undo':undo();break;case'redo':redo();break;case'new':if(confirm('建立新的空白專案？\n請先匯出 GLB 備份，這會取代本機目前的自動儲存。')){pushUndo();root.clear();select(null);changed();notify('已建立空白專案')}break;case'about':alert('3D Studio · v0.4.0\n\n✅ STL / OBJ / GLB / 3MF / SVG 匯入\n✅ 形狀建模、尺寸與位置調整\n✅ 手繪輪廓拉伸成 3D\n✅ 360° 預覽、STL 匯出、GLB 備份\n✅ 多品牌機型切換與平台範圍檢查\n✅ 列印設定備忘 JSON、模型一鍵適配平台\n✅ IndexedDB 本機自動儲存\n\n✅ 基本布林合併、挖孔、切割及簡易網格檢查\n✅ 點選兩點量測直線距離、自動排列模型及單零件 STL 匯出\n✅ 操作復原／重做保留選取狀態（最多 30 步）\n\n⚠️ 尚未包含專業自由雕刻、完整自動補洞、AI 圖轉 3D、自動切片或一鍵列印。\n\n請將 STL 匯入你所選機型對應的切片軟體，切片後再傳送列印。\n\n此網站只使用免費 Three.js 和瀏覽器內建能力，需連網載入 3D 函式庫；本機模型不會上傳伺服器。');break;}});
+document.querySelectorAll('#moreMenu [data-action]').forEach(b=>b.onclick=async()=>{hideMenu();switch(b.dataset.action){case'import':$('fileInput').click();break;case'text':openText();break;case'mirror':openMirror();break;case'export-glb':await exportGLB();break;case'printer':openPrinter();break;case'advanced':showAdvanced();break;case'arrange':showArrange();break;case'measure':startMeasurement();break;case'export-selected':exportSTL(true);break;case'settings-json':exportPrinterSettings();break;case'screenshot':screenshot();break;case'save':await saveProject();notify('已送出本機儲存');break;case'undo':undo();break;case'redo':redo();break;case'new':if(confirm('建立新的空白專案？\n請先匯出 GLB 備份，這會取代本機目前的自動儲存。')){pushUndo();root.clear();select(null);changed();notify('已建立空白專案')}break;case'about':alert('3D Studio · v0.5.0\n\n✅ STL / OBJ / GLB / 3MF / SVG 匯入\n✅ 形狀建模、尺寸與位置調整\n✅ 手繪輪廓拉伸成 3D\n✅ 360° 預覽、STL 匯出、GLB 備份\n✅ 多品牌機型切換與平台範圍檢查\n✅ 列印設定備忘 JSON、模型一鍵適配平台\n✅ IndexedDB 本機自動儲存\n\n✅ 基本布林合併、挖孔、切割及簡易網格檢查\n✅ 點選兩點量測直線距離、自動排列模型及單零件 STL 匯出\n✅ 修復手機 STL 檔案選擇器，增加文字浮雕／凹刻和鏡像\n✅ 操作復原／重做保留選取狀態（最多 30 步）\n\n⚠️ 尚未包含專業自由雕刻、完整自動補洞、AI 圖轉 3D、自動切片或一鍵列印。\n\n請將 STL 匯入你所選機型對應的切片軟體，切片後再傳送列印。\n\n此網站只使用免費 Three.js 和瀏覽器內建能力，需連網載入 3D 函式庫；本機模型不會上傳伺服器。');break;}});
 document.addEventListener('click',e=>{if(!e.target.closest('#moreBtn')&&!e.target.closest('#moreMenu'))hideMenu()});
-document.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x===b));const a=b.dataset.side;if(a==='sketch')$('sketchBtn').click();else if(a==='import')$('fileInput').click();else if(a==='printer')openPrinter();else if(a==='advanced')showAdvanced();else if(a==='arrange')showArrange();else if(a==='measure')startMeasurement();else mobileClose()});
+document.querySelectorAll('[data-side]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-side]').forEach(x=>x.classList.toggle('selected',x===b));const a=b.dataset.side;if(a==='sketch')$('sketchBtn').click();else if(a==='text')openText();else if(a==='import')$('fileInput').click();else if(a==='printer')openPrinter();else if(a==='advanced')showAdvanced();else if(a==='arrange')showArrange();else if(a==='measure')startMeasurement();else mobileClose()});
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));$('frameBtn').onclick=frame;$('undoBtn').onclick=undo;$('redoBtn').onclick=redo;
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>view(b.dataset.view));$('gridBtn').onclick=()=>{grid.visible=!grid.visible;notify(grid.visible?'已顯示平台網格':'已隱藏平台網格')};
-for(const modal of ['sketchModal','shapeModal','printerModal','advancedModal','arrangeModal'])$(modal).addEventListener('click',e=>{if(e.target===$(modal))$(modal).classList.add('hidden')});
+for(const modal of ['sketchModal','shapeModal','printerModal','advancedModal','arrangeModal','textModal','mirrorModal'])$(modal).addEventListener('click',e=>{if(e.target===$(modal))$(modal).classList.add('hidden')});
 stage.addEventListener('pointerdown',e=>{downAt={x:e.clientX,y:e.clientY,t:Date.now()}});
 stage.addEventListener('pointerup',e=>{
  if(!downAt)return;const start=downAt;downAt=null;
@@ -802,7 +949,7 @@ stage.addEventListener('pointerup',e=>{
  else if(!e.target.closest('.tool-dock'))select(null);
 });
 stage.addEventListener('dragover',e=>{e.preventDefault()});stage.addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files?.length)importFiles([...e.dataTransfer.files])});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){mobileClose();hideMenu();$('sketchModal').classList.add('hidden');$('shapeModal').classList.add('hidden');$('printerModal').classList.add('hidden');$('advancedModal').classList.add('hidden');$('arrangeModal').classList.add('hidden');stopMeasurement();return}const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if(typing)return;if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeSelected()}if(e.key.toLowerCase()==='g'&&!e.ctrlKey&&!e.metaKey)setTool('translate');if(e.key.toLowerCase()==='r'&&!e.ctrlKey&&!e.metaKey)setTool('rotate');if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey)setTool('scale');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){mobileClose();hideMenu();$('sketchModal').classList.add('hidden');$('shapeModal').classList.add('hidden');$('printerModal').classList.add('hidden');$('advancedModal').classList.add('hidden');$('arrangeModal').classList.add('hidden');$('textModal').classList.add('hidden');$('mirrorModal').classList.add('hidden');stopMeasurement();return}const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if(typing)return;if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeSelected()}if(e.key.toLowerCase()==='g'&&!e.ctrlKey&&!e.metaKey)setTool('translate');if(e.key.toLowerCase()==='r'&&!e.ctrlKey&&!e.metaKey)setTool('rotate');if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey)setTool('scale');});
 if(window.innerWidth<=850){$('menuBtn').classList.remove('hidden');$('closeInspector').classList.remove('hidden')}
 window.addEventListener('resize',()=>{$('menuBtn').classList.toggle('hidden',window.innerWidth>850);$('closeInspector').classList.toggle('hidden',window.innerWidth>850);if(window.innerWidth>850)mobileClose()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&autosaveTimer)saveProject()});
