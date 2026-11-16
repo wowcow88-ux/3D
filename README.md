@@ -1,38 +1,47 @@
-# 3D Studio v0.1.1 — 主畫面 App 圖示版本
+# 3D Studio v0.2.0 — 多機型 3D 建模工作室
 
-本版本保留上一版 3D 建模功能，新增黑灰白 Logo 及 iPhone / Android 桌面 App 圖示設定。沒有增加一鍵列印或付費服務。
+免費、無會員、手機／平板／電腦共用的單頁 3D 建模編輯器。採用黑灰白 Logo 與簡約膠囊式操作介面。
 
-## 用 GitHub + Vercel 部署
+## 新增內容
 
-請**解壓縮後**，把這個資料夾裡全部檔案放到你的 GitHub 儲存庫**根目錄**（跟 index.html 同一層），若已有 index.html、vercel.json，選擇覆蓋舊版。不要只上傳 ZIP，也不要放進額外子資料夾。
+- **印表機切換**：Flashforge Creator 5 Pro、Bambu Lab P2S、Bambu Lab A1 mini、Original Prusa MK4S、Creality K1 Max、自訂 FDM 機型。
+- **列印平台隨機型改變**：支援不等長的矩形平台；檢查模型是否超出 X/Y/Z 有效列印空間。
+- **印表機參數備忘**：噴嘴直徑、層高、材料、牆層數、填充率與支撐偏好，能下載 JSON 設定檔供人工參照。
+- **模型編輯快選**：置中並放到平台、等比例縮小到平台內、旋轉歸零。
+- **更多模型格式**：STL、OBJ、GLB、SVG、3MF 模型資料匯入。部分切片器產生的 3MF 專案內專有設定未必能讀取。
+- **本機儲存**：沿用上一版的 IndexedDB 資料庫名稱 `3d-studio-c5p-v1`，避免升級後丟失原本的草稿；儲存機型設定。
+- **GLB 備份**：含 3D 幾何、材質與印表機編輯備忘。
 
-index.html
-manifest.webmanifest
-icon-180.png
-icon-192.png
-icon-512.png
-icon-1024.png
-icon-maskable-512.png
-favicon-32.png
-vercel.json
-README.md
+## 上傳 GitHub / Vercel
 
-Vercel 若已連線 GitHub main，推送後就會自動部署，無須改設定。這是 PWA 外觀設定，不含 service worker，因為 Three.js 等依賴網路 CDN，暫不保證離線可用。
+1. **先匯出備份**：在舊版 3D Studio 點選「備份設計專案」，將 GLB 保存到手機或電腦。
+2. 解壓縮本下載包，把檔案上傳至原本 GitHub `3D` 專案中 `index.html` 所在的**根目錄**。不要只上傳 ZIP，也不要額外包一層資料夾。
+3. 同名檔案以新版覆蓋；新增檔案保留在根目錄。
+4. 提交 Commit，等待 Vercel 自動部署。無須更換現有 Vercel 網址或 GitHub 專案設定。
+5. 使用原網站網址重新整理；若載入舊版，重新整理／清除**網站快取**，不要清除網站資料，以免丟失 IndexedDB 作品。
 
-## iPhone
+## 檔案
 
-1. 使用 Safari 進入部署好的網址。
-2. 點分享 → 加入主畫面。
-3. 開啟「打開為網頁 App」(若有選項)。
-4. 設定名稱「3D Studio」→ 加入。
-5. 若先前已加到主畫面但仍顯示舊圖示，請移除舊主畫面圖示後重新加入（不會刪除 Vercel 網站）。
+- `index.html`：主程式與版面（無打包步驟）
+- `vercel.json`：Vercel 靜態部署設定
+- `manifest.webmanifest`、`icon-*`、`favicon-32.png`：桌面 App 圖示與網站圖示
+- `README.md`：本操作說明
 
-## Android
+## 非常重要：STL 與切片的差別
 
-Chrome 打開網站 → ⋮ → 加到主畫面 / 安裝應用程式。
+STL 只有幾何結構，**不含**噴嘴溫度、速度、填充率、支撐、層高，也不是能直接傳給印表機執行的 G-code。即使在 3D Studio 選定機型，仍需將 STL 匯入對應切片軟體，確認尺寸、材料、支撐和所有參數，切片後才能列印。
 
-## 注意
+JSON 只是本程式的**人工對照備忘**，不能直接讓 Bambu Studio、Flash Studio 或 PrusaSlicer 自動使用其內容。3MF 匯入僅處理可解析的模型，不保證保留原切片器的列印配置。
 
-* 目前建模工作仍預設 Flashforge C5P 平台尺寸；新的 Logo 不限定品牌，但多機型切換將是後續功能。
-* 專案本機儲存跟瀏覽器／網域有關；更換網域或移除原網站前，先從程式匯出 GLB 備份。
-* 這是可以加入桌面的網頁 App，不是原生 iOS / Android App，是否可離線使用需另做開發。
+## 目前尚未實作
+
+- 真正自由雕塑／任意三角網格雕刻／完善布林建模
+- 將整張圖片自動變成雕像（這不是免費的 2D 輪廓拉伸）
+- 原生 3MF 模型匯出、機型專用 G-code、切片器 API、自動傳送與一鍵列印
+- 自動網格修復與可列印保證；應使用切片器的檢查結果
+
+## 隱私、費用與網路
+
+程式本身免費，不需後端 API、會員或資料庫；模型預設儲存在目前裝置的瀏覽器中，不會上傳伺服器。Three.js 由免費 CDN 載入，第一次或重新開啟時需網路；此版不是保證離線可用的 PWA。
+
+瀏覽器本機資料依**網域與瀏覽器容器**區隔；更改 Vercel 網址、切換 Safari／Chrome、移除主畫面 Web App 或清除網站資料前，先將作品匯出 GLB 備份。
